@@ -1,7 +1,6 @@
-.PHONY = setup init run clean
+SHELL=/bin/bash
 
-# Desired python version
-PYTHON = python3
+.PHONY = setup init run clean test
 
 # Defines the default target that `make` will try to make, or in the case of a phony target, execute the specified commands
 # This target is executed whenever we just type `make`
@@ -18,5 +17,9 @@ init:
 run:
 	poetry run extract.py
 
+test:
+	#mkdir -p data
+	poetry run pytest tests # --cov=. --cov-report=xml:data/unit_coverage.xml
+
 clean:
-	rm -r *.project
+	rm -r .venv 

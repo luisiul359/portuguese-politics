@@ -1,15 +1,19 @@
 [tool.poetry]
-name = "parlamento"
+name = "parliament"
 version = "0.1.0"
-description = "Extract information from PPortuguese Parliament API."
-authors = ["Your Name <you@example.com>"]
+description = "Extract information from Portuguese Parliament API."
+authors = ["Luis Silva <luisiul359@gmail.com>"]
+packages = [ { include = "parliament" } ]
 
 [tool.poetry.dependencies]
 python = ">=3.6.1,<4.0"
-requests = "^2.25.1"
-pandas = "^1.1.5"
+requests = "~2.25.1"
+pandas = "~1.1.5"
+ipykernel = "~5.5.6"
 
 [tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+pytest-cov = "^2.12.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
