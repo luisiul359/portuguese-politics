@@ -12,12 +12,12 @@ from app.apis import votes
 app = FastAPI()
 
 
-data_initiatives = extract_data()
+#data_initiatives = extract_data()
 #if Path("data_initiatives_votes.pkl").is_file():
-#    data_initiatives_votes = pd.read_pickle("data_initiatives_votes.pkl")
+data_initiatives_votes = pd.read_pickle("data_initiatives_votes.pkl")
 #else:
-data_initiatives_votes = get_initiatives_votes(data_initiatives)
-#    pd.to_pickle(data_initiatives_votes, "data_initiatives_votes.pkl")
+#data_initiatives_votes = get_initiatives_votes(data_initiatives)
+#pd.to_pickle(data_initiatives_votes, "data_initiatives_votes.pkl")
 
 
 @app.get("/party-approvals")
