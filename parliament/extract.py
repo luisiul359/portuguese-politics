@@ -358,11 +358,11 @@ def extract_data():
     #data_initiatives_followups = get_initiatives_followups(raw_initiatives)
     #data_initiatives_petitions = get_initiatives_petitions(raw_initiatives)
 
-    if Path("data_initiatives.pkl").is_file():
-      data_initiatives = pd.read_pickle("data_initiatives.pkl")
-    else:
-      data_initiatives = get_initiatives(raw_initiatives)
-      pd.to_pickle(data_initiatives, "data_initiatives.pkl")
+    #if Path("data_initiatives.pkl").is_file():
+    #  data_initiatives = pd.read_pickle("data_initiatives.pkl")
+    #else:
+    data_initiatives = get_initiatives(raw_initiatives)
+    #pd.to_pickle(data_initiatives, "data_initiatives.pkl")
 
     return data_initiatives
 
