@@ -1,9 +1,28 @@
 import requests
 import pandas as pd
 
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Any
 from copy import deepcopy
 from collections import defaultdict
+from tqdm import tqdm
+from pathlib import Path
+
+def to_list(x: Union[Any, List]) -> List:
+  return x if isinstance(x, list) else [x]
+
+
+class mydict(dict):
+  """
+  If the get value of a key is None we ruturn the default value instead.
+  """
+
+  def get(self, key: Any, default: Any):
+    value = super().get(key, default)
+
+    if value:
+      return mydict(value) if isinstance(value, dict) else value
+    else:
+      return default
 
 
 # data updated daily
@@ -23,7 +42,7 @@ def get_initiatives_followups(raw_initiatives: List) -> pd.DataFrame:
   """ Create a many to many relationship between initiatives (the main initiative and the folow-up) """
   
   data_initiatives_followups = pd.DataFrame()
-  for initiative in raw_initiatives:
+  for initiative in tqdm(raw_initiatives, "get_initiatives_followups"):
     # save all the initiative information to be stored
     info_to_store = {}
 
@@ -43,7 +62,7 @@ def get_initiatives_followups(raw_initiatives: List) -> pd.DataFrame:
       info_to_store_details["iniciativa_followup_desc"] = initiative_followup.get("descTipo", "")
       
       data_initiatives_followups = data_initiatives_followups.append(
-        **info_to_store_details,
+        info_to_store_details,
         ignore_index = True
       )
       
@@ -54,7 +73,7 @@ def get_initiatives_petitions(raw_initiatives: List) -> pd.DataFrame:
   """ Create a many to many relationship between initiatives and petitions """
   
   data_initiatives_petitions = pd.DataFrame()
-  for initiative in raw_initiatives:
+  for initiative in tqdm(raw_initiatives, "get_initiatives_petitions"):
     # save all the initiative information to be stored
     info_to_store = {}
 
@@ -73,7 +92,7 @@ def get_initiatives_petitions(raw_initiatives: List) -> pd.DataFrame:
       info_to_store_details["iniciativa_petition_assunto"] = initiative_petition.get("assunto", "")
       
       data_initiatives_petitions = data_initiatives_petitions.append(
-        **info_to_store_details,
+        info_to_store_details,
         ignore_index = True
       )
       
@@ -86,12 +105,9 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
 
   Will return a raw version, i.e., a wide range of information that needs to be further parsed.
   """
-
-  def to_list(x: Union[Dict, List]) -> List:
-    return x if isinstance(x, list) else [x]
   
   data_initiatives = pd.DataFrame()
-  for initiative in raw_initiatives:
+  for initiative in tqdm(raw_initiatives, "get_initiatives"):
     # save all the initiative information to be stored
     info_to_store = {}
 
@@ -105,7 +121,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
     info_to_store["iniciativa_texto_subst"] = initiative.get("iniTextoSubstCampo", "")
     
     # iniAutorGruposParlamentares
-    info_to_store["iniciativa_autor_grupos_parlamentares"] = initiative.get("iniAutorGruposParlamentares", {}).get("pt_gov_ar_objectos_AutoresGruposParlamentaresOut", {}).get("GP", "")
+    info_to_store["iniciativa_autor_grupos_parlamentares"] = "|".join([mydict(autor).get("GP", "") for autor in to_list(initiative.get("iniAutorGruposParlamentares", {}).get("pt_gov_ar_objectos_AutoresGruposParlamentaresOut", []))])
     
     # iniAutorOutros
     info_to_store["iniciativa_autor_outros_nome"] = initiative.get("iniAutorOutros", {}).get("nome", "")
@@ -113,20 +129,20 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
     
     # iniAutorDeputados
     autor_deputados = to_list(initiative.get("iniAutorDeputados", {}).get("pt_gov_ar_objectos_iniciativas_AutoresDeputadosOut", []))
-    info_to_store["iniciativa_autor_deputados_nomes"] = "|".join([x.get("nome", "") for x in autor_deputados])
-    info_to_store["iniciativa_autor_deputados_GPs"] = "|".join([x.get("GP", "") for x in autor_deputados])
+    info_to_store["iniciativa_autor_deputados_nomes"] = "|".join([mydict(x).get("nome", "") for x in autor_deputados if x])
+    info_to_store["iniciativa_autor_deputados_GPs"] = "|".join([mydict(x).get("GP", "") for x in autor_deputados if x])
     
     # iniAnexos
     anexos = to_list(initiative.get("iniAnexos", {}).get("pt_gov_ar_objectos_iniciativas_AnexosOut", []))
-    info_to_store["iniciativa_anexos_nomes"] = "|".join([x.get("anexoNome", "") for x in anexos])
-    info_to_store["iniciativa_anexos_URLs"] = "|".join([x.get("anexoFich", "") for x in anexos])
+    info_to_store["iniciativa_anexos_nomes"] = "|".join([mydict(x).get("anexoNome", "") for x in anexos if x])
+    info_to_store["iniciativa_anexos_URLs"] = "|".join([mydict(x).get("anexoFich", "") for x in anexos if x])
     
     # iniciativasOrigem
-    origem = initiative.get("iniciativasOrigem", {}).get("pt_gov_ar_objectos_iniciativas_DadosGeraisOut", {})
-    info_to_store["iniciativa_origem_id"] = origem.get("id", "")
-    info_to_store["iniciativa_origem_nr"] = origem.get("numero", "")
-    info_to_store["iniciativa_origem_assunto"] = origem.get("assunto", "")
-    info_to_store["iniciativa_origem_desc"] = origem.get("descTipo", "")
+    origem = to_list(mydict(initiative.get("iniciativasOrigem", {})).get("pt_gov_ar_objectos_iniciativas_DadosGeraisOut", []))
+    info_to_store["iniciativa_origem_id"] = "|".join([mydict(x).get("id", "") for x in origem if x])
+    info_to_store["iniciativa_origem_nr"] = "|".join([mydict(x).get("numero", "") for x in origem if x])
+    info_to_store["iniciativa_origem_assunto"] = "|".join([mydict(x).get("assunto", "") for x in origem if x])
+    info_to_store["iniciativa_origem_desc"] = "|".join([mydict(x).get("descTipo", "") for x in origem if x])
     
     # iniEventos
     #
@@ -140,29 +156,62 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
       info_to_store_details["iniciativa_evento_data"] = event.get("dataFase", "")
       info_to_store_details["iniciativa_evento_id"] = event.get("evtId", "")
       
-      publicacao_detalhe = event.get("publicacaoFase", {}).get("pt_gov_ar_objectos_PublicacoesOut", {})
-      info_to_store_details["iniciativa_publicacao_Tipo"] = publicacao_detalhe.get("pubTipo", "")
-      info_to_store_details["iniciativa_publicacao_URL"] = publicacao_detalhe.get("URLDiario", "")
-      info_to_store_details["iniciativa_publicacao_Obs"] = publicacao_detalhe.get("obs", "")
-      info_to_store_details["iniciativa_publicacao_Pags"] = "|".join(publicacao_detalhe.get("pag", []))
+      publicacao_detalhe = to_list(event.get("publicacaoFase", {}).get("pt_gov_ar_objectos_PublicacoesOut", {}))
+      info_to_store_details["iniciativa_publicacao_Tipo"] = [mydict(x).get("pubTipo", "") for x in publicacao_detalhe]
+      info_to_store_details["iniciativa_publicacao_URL"] = [mydict(x).get("URLDiario", "") for x in publicacao_detalhe]
+      info_to_store_details["iniciativa_publicacao_Obs"] = [mydict(x).get("obs", "") for x in publicacao_detalhe]
+      info_to_store_details["iniciativa_publicacao_Pags"] = "|".join([
+        "|".join(to_list(mydict(x).get("pag", {}).get("string", ""))) for x in publicacao_detalhe
+      ])
       
       iniciativas_conjuntas = to_list(event.get("iniciativasConjuntas", {}).get("pt_gov_ar_objectos_iniciativas_DiscussaoConjuntaOut", []))
-      info_to_store_details["iniciativa_iniciativas_conjuntas_tipo"] = "|".join([x.get("descTipo", "") for x in iniciativas_conjuntas])
-      info_to_store_details["iniciativa_iniciativas_conjuntas_titulo"] = "|".join([x.get("titulo", "") for x in iniciativas_conjuntas])
+      info_to_store_details["iniciativa_iniciativas_conjuntas_tipo"] = "|".join([mydict(x).get("descTipo", "") for x in iniciativas_conjuntas if x])
+      info_to_store_details["iniciativa_iniciativas_conjuntas_titulo"] = "|".join([mydict(x).get("titulo", "") for x in iniciativas_conjuntas if x])
       
-      oradores = to_list(event.get("intervencoesdebates", {}).get("pt_gov_ar_objectos_IntervencoesOut", {}).get("oradores", {}).get("pt_gov_ar_objectos_peticoes_OradoresOut", []))
-      info_to_store_details["iniciativa_oradores_deputados_nomes"] = "|".join([x.get("deputados", {}).get("nome", "") for x in oradores])
-      info_to_store_details["iniciativa_oradores_deputados_gp"] = "|".join([x.get("deputados", {}).get("GP", "") for x in oradores])
-      info_to_store_details["iniciativa_oradores_governo_nomes"] = "|".join([x.get("membrosGoverno", {}).get("nome", "") for x in oradores])
-      info_to_store_details["iniciativa_oradores_governo_cargo"] = "|".join([x.get("membrosGoverno", {}).get("cargo", "") for x in oradores])
+      intervencoes = to_list(event.get("intervencoesdebates", {}).get("pt_gov_ar_objectos_IntervencoesOut", []))
+      info_to_store_details["iniciativa_oradores_deputados_nomes"] = "|".join([ 
+        "|".join([
+          mydict(orador).get("deputados", {}).get("nome", "") 
+          for orador in to_list(intervencao.get("oradores", {}).get("pt_gov_ar_objectos_peticoes_OradoresOut", []))
+        ])
+        for intervencao in intervencoes
+      ])
+      info_to_store_details["iniciativa_oradores_deputados_gp"] = "|".join([ 
+        "|".join([
+          mydict(orador).get("deputados", {}).get("GP", "") 
+          for orador in to_list(intervencao.get("oradores", {}).get("pt_gov_ar_objectos_peticoes_OradoresOut", []))
+        ])
+        for intervencao in intervencoes
+      ])
+      info_to_store_details["iniciativa_oradores_governo_nomes"] = "|".join([ 
+        "|".join([
+          mydict(orador).get("membrosGoverno", {}).get("nome", "") 
+          for orador in to_list(intervencao.get("oradores", {}).get("pt_gov_ar_objectos_peticoes_OradoresOut", []))
+        ])
+        for intervencao in intervencoes
+      ])
+      info_to_store_details["iniciativa_oradores_governo_cargo"] = "|".join([ 
+        "|".join([
+          mydict(orador).get("membrosGoverno", {}).get("cargo", "") 
+          for orador in to_list(intervencao.get("oradores", {}).get("pt_gov_ar_objectos_peticoes_OradoresOut", []))
+        ])
+        for intervencao in intervencoes
+      ])
       # government and deputies videos are mixed
-      info_to_store_details["iniciativa_oradores_videos"] = "|".join([x.get("linkVideo", {}).get("pt_gov_ar_objectos_peticoes_LinksVideos", {}).get("link", "") for x in oradores])
+      info_to_store_details["iniciativa_oradores_videos"] = "|".join([ 
+        "|".join([
+          "|".join([x.get("link", "") for x in to_list(mydict(orador).get("linkVideo", {}).get("pt_gov_ar_objectos_peticoes_LinksVideos", {}))])
+          for orador in to_list(mydict(intervencao).get("oradores", {}).get("pt_gov_ar_objectos_peticoes_OradoresOut", []))
+        ])
+        for intervencao in intervencoes
+      ])
       
       votacao = event.get("votacao", {}).get("pt_gov_ar_objectos_VotacaoOut", {})
       if (isinstance(votacao, list)):
         # in some situations the same initiative in a certain event can have several votes
         # for now we will consider only the first one
         votacao = votacao[0]
+      votacao = mydict(votacao)
       info_to_store_details["iniciativa_votacao_res"] = votacao.get("resultado", "")
       info_to_store_details["iniciativa_votacao_desc"] = votacao.get("descricao", "")
       info_to_store_details["iniciativa_votacao_tipo_reuniao"] = votacao.get("tipoReuniao", "")
@@ -171,38 +220,41 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
       info_to_store_details["iniciativa_votacao_ausencias"] = votacao.get("ausencias", {}).get("string", "")
       
       anexos = to_list(event.get("anexosFase", {}).get("pt_gov_ar_objectos_iniciativas_AnexosOut", []))
-      info_to_store_details["iniciativa_anexo_nome"] = "|".join([x.get("anexoNome", "") for x in anexos])
-      info_to_store_details["iniciativa_anexo_url"] = "|".join([x.get("anexoFich", "") for x in anexos])
+      info_to_store_details["iniciativa_anexo_nome"] = "|".join([mydict(x).get("anexoNome", "") for x in anexos if x])
+      info_to_store_details["iniciativa_anexo_url"] = "|".join([mydict(x).get("anexoFich", "") for x in anexos if x])
       
-      comissao = event.get("comissao", {}).get("pt_gov_ar_objectos_iniciativas_ComissoesIniOut", {})
+      comissao = mydict(event.get("comissao", {})).get("pt_gov_ar_objectos_iniciativas_ComissoesIniOut", {})
       info_to_store_details["iniciativa_comissao_nome"] = comissao.get("nome", "")
       info_to_store_details["iniciativa_comissao_competente"] = comissao.get("competente", "")
-      info_to_store_details["iniciativa_comissao_observacao"] = comissao.get("observacao," "")
+      info_to_store_details["iniciativa_comissao_observacao"] = comissao.get("observacao", "")
       info_to_store_details["iniciativa_comissao_data_relatorio"] = comissao.get("dataRelatorio", "")
       info_to_store_details["iniciativa_comissao_pedidos_parecer"] = "|".join([_ for _ in to_list(comissao.get("pedidosParecer", {}).get("string", [])) if isinstance(_, str)])
       info_to_store_details["iniciativa_comissao_pareceres_recebidos"] = "|".join([_ for _ in to_list(comissao.get("pareceresRecebidos", {}).get("string", [])) if isinstance(_, str)])
       
       documentos = to_list(comissao.get("documentos", {}).get("pt_gov_ar_objectos_DocsOut", []))
-      info_to_store_details["iniciativa_comissao_documentos_Titulos"] = "|".join([x.get("tituloDocumento", "") for x in documentos])
-      info_to_store_details["iniciativa_comissao_documentos_Tipos"] = "|".join([x.get("tipoDocumento", "") for x in documentos])
-      info_to_store_details["iniciativa_comissao_documentos_URLs"] = "|".join([x.get("URL", "") for x in documentos])
+      info_to_store_details["iniciativa_comissao_documentos_Titulos"] = "|".join([mydict(x).get("tituloDocumento", "") for x in documentos if x])
+      info_to_store_details["iniciativa_comissao_documentos_Tipos"] = "|".join([mydict(x).get("tipoDocumento", "") for x in documentos if x])
+      info_to_store_details["iniciativa_comissao_documentos_URLs"] = "|".join([mydict(x).get("URL", "") for x in documentos if x])
       
-      publicacaoDetalhe = comissao.get("publicacao", {}).get("pt_gov_ar_objectos_PublicacoesOut", {})
-      info_to_store_details["iniciativa_comissao_publicacao_Tipo"] = publicacaoDetalhe.get("pubTipo", "")
-      info_to_store_details["iniciativa_comissao_publicacao_URL"] = publicacaoDetalhe.get("URLDiario", "")
-      info_to_store_details["iniciativa_comissao_publicacao_Obs"] = publicacaoDetalhe.get("obs", "")
-      info_to_store_details["iniciativa_comissao_publicacao_Pags"] = "|".join(publicacaoDetalhe.get("pag", ""))
-      
-      info_to_store_details["iniciativa_comissao_votacao_Res"] = comissao.get("votacao", {}).get("resultado", "")
-      info_to_store_details["iniciativa_comissao_votacao_Desc"] = comissao.get("votacao", {}).get("descricao", "")
-      info_to_store_details["iniciativa_comissao_votacao_Data"] = comissao.get("votacao", {}).get("data", "")
-      info_to_store_details["iniciativa_comissao_votacao_Unanime"] = comissao.get("votacao", {}).get("unanime", "")
+      publicacaoDetalhe = to_list(comissao.get("publicacao", {}).get("pt_gov_ar_objectos_PublicacoesOut", {}))
+      info_to_store_details["iniciativa_comissao_publicacao_Tipo"] = [mydict(x).get("pubTipo", "") for x in publicacaoDetalhe]
+      info_to_store_details["iniciativa_comissao_publicacao_URL"] = [mydict(x).get("URLDiario", "") for x in publicacaoDetalhe]
+      info_to_store_details["iniciativa_comissao_publicacao_Obs"] = [mydict(x).get("obs", "") for x in publicacaoDetalhe]
+      info_to_store_details["iniciativa_comissao_publicacao_Pags"] = "|".join([
+        "|".join(to_list(mydict(x).get("pag", {}).get("string", ""))) for x in publicacaoDetalhe
+      ])
+
+      votacao = comissao.get("votacao", {}).get("pt_gov_ar_objectos_VotacaoOut", {})
+      info_to_store_details["iniciativa_comissao_votacao_Res"] = votacao.get("resultado", "")
+      info_to_store_details["iniciativa_comissao_votacao_Desc"] = votacao.get("descricao", "")
+      info_to_store_details["iniciativa_comissao_votacao_Data"] = votacao.get("data", "")
+      info_to_store_details["iniciativa_comissao_votacao_Unanime"] = votacao.get("unanime", "")
       
       # TODO: in event: teor, sumario, publicacao
       # TODO: in comissao:  audicoes, audiencias, distribuicaoSubcomissao, motivoNaoParecer, pareceresRecebidos, pedidosParecer, relatores
       
       data_initiatives = data_initiatives.append(
-        **info_to_store_details,
+        info_to_store_details,
         ignore_index = True
       )
       
@@ -221,6 +273,7 @@ def _split_vote_result(vote: str) -> Dict[str, list]:
   # clean vote information
   vote = vote.lower().replace(" ", "").replace("<br>", "").replace("</i>", "").replace("<i>", "")
   vote = vote.replace("afavor:", ",afavor,").replace("contra:", ",contra,").replace("ausência:", ",ausência,").replace("abstenção:", ",abstenção,")
+  vote = vote.replace("cristinarodrigues(ninsc)", "cr").replace("joacinekatarmoreira(ninsc)", "jkm")
   vote = vote.split(",")
   
   result = defaultdict(list)
@@ -232,7 +285,11 @@ def _split_vote_result(vote: str) -> Dict[str, list]:
     if party in "afavor,contra,ausência,abstenção":
       current_option = party
     else:
-      result[current_option].append(party)
+      if party in "ps,psd,be,pcp,cds-pp,pan,pev,ch,il,l,cr,jkm".split(","):
+        result[current_option].append(party)
+      # sometimes deputies vote different from their own party
+      else:
+        result[f"outros_{current_option}"].append(party)
 
   return result
 
@@ -246,17 +303,25 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
   columns_to_keep = ["iniciativa_id","iniciativa_nr","iniciativa_tipo","iniciativa_titulo","iniciativa_evento_fase","iniciativa_evento_data","iniciativa_url","iniciativa_obs","iniciativa_texto_subst","iniciativa_autor_grupos_parlamentares","iniciativa_autor_outros_nome","iniciativa_autor_outros_autor_comissao","iniciativa_autor_deputados_nomes","iniciativa_autor_deputados_GPs"]
 
   data_initiatives = pd.DataFrame()
-  for _, row in initiatives[columns_to_keep].iterrows():
-    column_to_store = row.copy()
+  for _, row in tqdm(initiatives.iterrows(), "get_initiatives_votes", len(initiatives)):
+    columns_to_store = row[columns_to_keep].copy()
     
-    vote_results = _split_vote_result(row["iniciativa_votacao_detalhe"])
+    if row["iniciativa_votacao_detalhe"]:
+      vote_results = _split_vote_result(row["iniciativa_votacao_detalhe"])
 
-    # create a new column for each party with the respective vote
-    for vote, parties in vote_results.items():
-      for party in parties:
-        column_to_store[f"iniciativa_votacao_{party}"] = vote
-      
-    data_initiatives = data_initiatives.append(column_to_store)
+      # create a new column for each party with the respective vote
+      for vote, parties in vote_results.items():
+        for party in parties:
+          if "outros" in vote:
+            k = f"iniciativa_votacao_{vote}"
+            if k in columns_to_store:
+              columns_to_store[k] = f"{columns_to_store[k]}|{party}"
+            else:
+              columns_to_store[k] = party
+          else:
+            columns_to_store[f"iniciativa_votacao_{party}"] = vote
+        
+      data_initiatives = data_initiatives.append(columns_to_store)
 
   return data_initiatives
 
@@ -269,6 +334,18 @@ if __name__ == "__main__":
 
     data_initiatives_petitions = get_initiatives_petitions(raw_initiatives)
 
-    data_initiatives = get_initiatives(raw_initiatives)
+    if Path("data_initiatives.pkl").is_file():
+      data_initiatives = pd.read_pickle("data_initiatives.pkl")
+    else:
+      data_initiatives = get_initiatives(raw_initiatives)
+      pd.to_pickle(data_initiatives, "data_initiatives.pkl")
 
-    data_initiatives_votes = get_initiatives_votes(data_initiatives)
+    if Path("data_initiatives_votes.pkl").is_file():
+      data_initiatives_votes = pd.read_pickle("data_initiatives_votes.pkl")
+    else:
+      data_initiatives_votes = get_initiatives_votes(data_initiatives)
+      pd.to_pickle(data_initiatives_votes, "data_initiatives_votes.pkl")
+    
+    data_initiatives_votes.to_excel("output.xlsx")
+
+    print(data_initiatives_votes.head())

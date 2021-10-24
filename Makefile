@@ -15,7 +15,7 @@ init:
 	poetry install
 
 run:
-	poetry run extract.py
+	time poetry run python parliament/extract.py
 
 test:
 	#mkdir -p data
