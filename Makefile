@@ -15,6 +15,9 @@ init:
 	poetry install
 
 run:
+	poetry run uvicorn app.main:app --reload
+
+run_extract:
 	time poetry run python parliament/extract.py
 
 test:

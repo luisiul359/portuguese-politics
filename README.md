@@ -7,3 +7,11 @@ From the public Portuguese Parliament API provides several ready to use endpoint
 ```bash
 make setup init
 ```
+
+## Run the webserver
+
+Still in development mode.
+
+```bash
+make run
+```

@@ -3,7 +3,7 @@ name = "parliament"
 version = "0.1.0"
 description = "Extract information from Portuguese Parliament API."
 authors = ["Luis Silva <luisiul359@gmail.com>"]
-packages = [ { include = "parliament" } ]
+packages = [ { include = "parliament" }, { include = "app" } ]
 
 [tool.poetry.dependencies]
 python = ">=3.6.1,<4.0"
@@ -11,6 +11,8 @@ requests = "~2.25.1"
 pandas = "~1.1.5"
 ipykernel = "~5.5.6"
 tqdm = "~4.62.3"
+fastapi = "~0.68.2"
+uvicorn = {version = "~0.15.0", extras = ["standard"]}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
