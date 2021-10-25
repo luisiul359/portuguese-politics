@@ -22,4 +22,23 @@ data_initiatives_votes = pd.read_pickle("data_initiatives_votes.pkl")
 
 @app.get("/party-approvals")
 def get_party_approvals(type: Optional[str] = None, dt_ini: Optional[str] = None, dt_fin: Optional[str] = None):
-    return json.loads(votes.get_party_approvals(data_initiatives_votes).to_json(orient="index"))
+    
+    party_approvals = votes.get_party_approvals(data_initiatives_votes).to_json(orient="index")
+    
+    # transform to the expected schema
+    approvals = []
+    for autor, value in json.loads(party_approvals).items():
+
+        data = {
+            "id": autor.lower().replace(" ", "-"),
+            "nome": autor,
+            "total_iniciativas": value["total_iniciativas"],
+            "total_iniciativas_aprovadas": value["total_iniciativas_aprovadas"],
+        }
+
+        data["aprovacoes"] = {k.replace("iniciativa_votacao_", ""): v for k, v in value.items() if k.startswith("iniciativa_votacao_")}
+
+        approvals.append(data)
+
+    return {'autores': approvals}
+
