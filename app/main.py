@@ -30,7 +30,7 @@ def get_party_approvals(type: Optional[str] = None, dt_ini: Optional[str] = None
     for autor, value in json.loads(party_approvals).items():
 
         data = {
-            "id": autor.lower().replace(" ", "-"),
+            "id": autor.lower().replace(" ", "-").replace("cristina-rodrigues", "cr").replace("joacine-katar-moreira", "jkm"),
             "nome": autor,
             "total_iniciativas": value["total_iniciativas"],
             "total_iniciativas_aprovadas": value["total_iniciativas_aprovadas"],
