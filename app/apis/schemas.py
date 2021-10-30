@@ -12,3 +12,12 @@ class PartyApprovals(BaseModel):
 
 class PartyApprovalsOut(BaseModel):
     autores: List[PartyApprovals]
+
+
+class PartyCorrelations(BaseModel):
+    nome: str
+    correlacoes: Dict[str, float]
+
+
+class PartyCorrelationsOut(BaseModel):
+    partido: List[PartyCorrelations]

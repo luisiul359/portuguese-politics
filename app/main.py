@@ -55,3 +55,26 @@ def get_party_approvals(type: Optional[str] = None, dt_ini: Optional[date] = Non
 
     return {'autores': approvals}
 
+
+@app.get("/party-correlations", response_model=schemas.PartyCorrelationsOut)
+def get_party_correlations(dt_ini: Optional[date] = None, dt_fin: Optional[date] = None):
+    
+    data_initiatives_votes_ = data_initiatives_votes
+    
+    if dt_ini:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini]
+
+    if dt_fin:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_data"].dt.date <= dt_fin]
+
+    party_corr = votes.get_party_correlations(data_initiatives_votes_).to_json(orient="index")
+
+    # transform to the expected schema
+    res = []
+    for party, corr in json.loads(party_corr).items():
+        res.append({
+            "nome": party.replace("iniciativa_votacao_", ""),
+            "correlacoes": {k.replace("iniciativa_votacao_", ""): v for k, v in corr.items()}
+        })
+
+    return {"partido": res}
