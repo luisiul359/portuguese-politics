@@ -4,9 +4,10 @@ import json
 from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI
+from datetime import date
 
 from parliament.extract import extract_data, get_initiatives_votes
-from app.apis import votes
+from app.apis import votes, schemas
 
 
 app = FastAPI()
@@ -15,15 +16,27 @@ app = FastAPI()
 #data_initiatives = extract_data()
 #if Path("data_initiatives_votes.pkl").is_file():
 data_initiatives_votes = pd.read_pickle("data_initiatives_votes.pkl")
+data_initiatives_votes["iniciativa_evento_data"] = pd.to_datetime(data_initiatives_votes["iniciativa_evento_data"])
 #else:
 #data_initiatives_votes = get_initiatives_votes(data_initiatives)
 #pd.to_pickle(data_initiatives_votes, "data_initiatives_votes.pkl")
 
 
-@app.get("/party-approvals")
-def get_party_approvals(type: Optional[str] = None, dt_ini: Optional[str] = None, dt_fin: Optional[str] = None):
+@app.get("/party-approvals", response_model=schemas.PartyApprovalsOut)
+def get_party_approvals(type: Optional[str] = None, dt_ini: Optional[date] = None, dt_fin: Optional[date] = None):
+
+    data_initiatives_votes_ = data_initiatives_votes
     
-    party_approvals = votes.get_party_approvals(data_initiatives_votes).to_json(orient="index")
+    if dt_ini:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini]
+
+    if dt_fin:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_data"].dt.date <= dt_fin]
+
+    if type:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_tipo"] == type]
+    
+    party_approvals = votes.get_party_approvals(data_initiatives_votes_).to_json(orient="index")
     
     # transform to the expected schema
     approvals = []

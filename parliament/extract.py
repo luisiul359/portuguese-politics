@@ -26,17 +26,26 @@ class mydict(dict):
       return default
 
 
-# data updated daily
+# endpoint updated daily
+# XIV Legislatura
 PATH = "https://app.parlamento.pt/webutils/docs/doc.txt?path=6148523063446f764c324679626d56304c3239775a57356b595852684c3052685a47397a51574a6c636e52766379394a626d6c6a6157463061585a68637939595356596c4d6a424d5a57647063327868644856795953394a626d6c6a6157463061585a686331684a566c3971633239754c6e523464413d3d&fich=IniciativasXIV_json.txt&Inline=true"
 
 
 def get_data(path: str) -> List[Dict]:
     """ Load the most recent data provided by Parlamento """
     
-    payload = requests.get(path)
-    assert payload.status_code == 200
+    try:
+      payload = requests.get(
+        path,
+        # fake, but wihtout it the request is rejected
+        headers={'User-Agent': 'Mozilla/5.0'}
+      )
+      assert payload.status_code == 200
 
-    return payload.json().get("ArrayOfPt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", {}).get("pt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", [])
+      return payload.json().get("ArrayOfPt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", {}).get("pt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", [])
+    except Exception as e:
+      print(path)
+      raise e
 
 
 def get_initiatives_followups(raw_initiatives: List) -> pd.DataFrame:
@@ -347,6 +356,7 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
   # enhance data with processed fields
   data_initiatives["iniciativa_autor"] = data_initiatives.apply(_get_author, axis="columns")
   data_initiatives["iniciativa_aprovada"] = data_initiatives["iniciativa_votacao_res"] == "Aprovado"
+  data_initiatives["iniciativa_evento_data"] = pd.to_datetime(data_initiatives["iniciativa_evento_data"])
 
   return data_initiatives
 

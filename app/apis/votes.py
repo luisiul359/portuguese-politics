@@ -4,6 +4,10 @@ from typing import List
 
 
 def get_party_approvals(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
+    """
+    Manipulate the votes to get the percentage of approval per party for each other party
+    """
+    
     # get all party votes fields
     parties_vote_direction_fields = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]
     to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra".split()

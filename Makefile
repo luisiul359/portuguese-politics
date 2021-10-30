@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-.PHONY = setup init run clean test
+.PHONY = setup init run run_extract test clean
 
 # Defines the default target that `make` will try to make, or in the case of a phony target, execute the specified commands
 # This target is executed whenever we just type `make`
