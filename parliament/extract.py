@@ -255,6 +255,10 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
       ])
 
       votacao = comissao.get("votacao", {}).get("pt_gov_ar_objectos_VotacaoOut", {})
+      # in some situations that I need to understand we have several polls
+      # for now will keep the first one
+      if isinstance(votacao, List):
+        votacao = votacao[0]
       info_to_store_details["iniciativa_comissao_votacao_Res"] = votacao.get("resultado", "")
       info_to_store_details["iniciativa_comissao_votacao_Desc"] = votacao.get("descricao", "")
       info_to_store_details["iniciativa_comissao_votacao_Data"] = votacao.get("data", "")
