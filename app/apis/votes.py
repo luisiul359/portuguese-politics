@@ -56,3 +56,21 @@ def get_party_correlations(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame
             res[party_a].append(total_corr / total)
 
     return pd.DataFrame(res, index=parties_columns)
+
+
+def get_initiatives(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
+    """
+    Get all initiatives, removing not needed fields
+    """
+    
+    # get needed fields' name
+    parties_vote_direction_fields = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]
+    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra".split()
+    parties_vote_direction_fields = list(set(parties_vote_direction_fields) - set(to_exclude))
+
+    columns = ["iniciativa_evento_fase", "iniciativa_titulo", "iniciativa_url", "iniciativa_autor", "iniciativa_autor_deputado", "iniciativa_evento_data", "iniciativa_tipo", "iniciativa_votacao_res"] + parties_vote_direction_fields
+
+    return data_initiatives_votes[columns].rename({
+        "iniciativa_evento_data": "iniciativa_data",
+        "iniciativa_evento_fase": "iniciativa_fase"
+        }, axis="columns")

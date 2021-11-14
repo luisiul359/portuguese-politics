@@ -308,6 +308,7 @@ def _get_author(initiative: pd.Series) -> str:
   """
   Get the correct author of an initiative. That information is spread among 3 columns
   """
+
   if initiative["iniciativa_autor_grupos_parlamentares"] == "":
     # initiative not from parliamentary groups or deputies
     if initiative["iniciativa_autor_deputados_GPs"] == "":
@@ -323,6 +324,20 @@ def _get_author(initiative: pd.Series) -> str:
   else:
     return initiative["iniciativa_autor_grupos_parlamentares"]
 
+
+def _get_author_deputy(initiative: pd.Series) -> str:
+  """
+  Get the correct deputy author of an initiative. That information is spread among 3 columns
+  """
+  
+  if initiative["iniciativa_autor_deputados_nomes"] == "":
+    if initiative["iniciativa_autor_outros_nome"] == "Grupos Parlamentares":
+      return initiative["iniciativa_autor_grupos_parlamentares"]
+    else:
+      return initiative["iniciativa_autor_outros_nome"]
+  else:
+    return initiative["iniciativa_autor_deputados_nomes"]
+  
 
 def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
   """
@@ -355,6 +370,7 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
 
   # enhance data with processed fields
   data_initiatives["iniciativa_autor"] = data_initiatives.apply(_get_author, axis="columns")
+  data_initiatives["iniciativa_autor_deputado"] = data_initiatives.apply(_get_author_deputy, axis="columns")
   data_initiatives["iniciativa_aprovada"] = data_initiatives["iniciativa_votacao_res"] == "Aprovado"
   data_initiatives["iniciativa_evento_data"] = pd.to_datetime(data_initiatives["iniciativa_evento_data"])
 

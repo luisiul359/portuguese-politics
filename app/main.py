@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import FastAPI
 from datetime import date
 
-from parliament.extract import extract_data, get_initiatives_votes
+from parliament.extract import extract_data, get_initiatives_votes, _get_author_deputy
 from app.apis import votes, schemas
 
 
@@ -17,6 +17,7 @@ app = FastAPI()
 #if Path("data_initiatives_votes.pkl").is_file():
 data_initiatives_votes = pd.read_pickle("data_initiatives_votes.pkl")
 data_initiatives_votes["iniciativa_evento_data"] = pd.to_datetime(data_initiatives_votes["iniciativa_evento_data"])
+data_initiatives_votes["iniciativa_autor_deputado"] = data_initiatives_votes.apply(_get_author_deputy, axis="columns")
 #else:
 #data_initiatives_votes = get_initiatives_votes(data_initiatives)
 #pd.to_pickle(data_initiatives_votes, "data_initiatives_votes.pkl")
@@ -78,3 +79,33 @@ def get_party_correlations(dt_ini: Optional[date] = None, dt_fin: Optional[date]
         })
 
     return {"partido": res}
+
+
+@app.get("/initiatives")
+def get_initiatives(name_filter: Optional[str] = None, party: Optional[str] = None, deputy: Optional[str] = None,  dt_ini: Optional[date] = None, dt_fin: Optional[date] = None, limit: Optional[int] = 20, offset: Optional[int] = 0):
+    
+    data_initiatives_votes_ = data_initiatives_votes
+    
+    if dt_ini:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini]
+
+    if dt_fin:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_data"].dt.date <= dt_fin]
+
+    if name_filter:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_titulo"].str.lower().str.contains(name_filter.lower())]
+
+    if party:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_autor"].str.lower() == party.lower()]
+
+    if deputy:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_autor_deputado"].str.lower().str.contains(deputy.lower())]
+
+    initiatives = votes.get_initiatives(data_initiatives_votes_).sort_values("iniciativa_data").head(limit+offset).tail(limit).to_json(orient="index")
+
+    # transform to the expected schema
+    res = []
+    for _, initiative in json.loads(initiatives).items():
+        res.append(initiative)
+
+    return {"initiativas": res}
