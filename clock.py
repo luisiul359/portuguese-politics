@@ -10,7 +10,7 @@ redis_url = os.getenv("REDIS_URL")
 sched = BlockingScheduler()
 
 
-@sched.scheduled_job('cron', day_of_week='sat', hour=18, minute=20)
+@sched.scheduled_job('cron', day_of_week='sat', hour=20, minute=10)
 def scheduled_job():
     # connect to Redis
     conn = redis.from_url(redis_url)

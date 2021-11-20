@@ -28,5 +28,8 @@ def test(input):
 
     cur.execute(insert_value_statement)
 
+    # Make the changes to the database persistent
+    con.commit()
+
     # close the communication with the PostgreSQL
     cur.close()
