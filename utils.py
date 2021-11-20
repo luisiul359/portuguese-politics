@@ -23,7 +23,7 @@ def test(input):
 
     insert_value_statement = """
     INSERT INTO table_test(test_attr)
-    VALUES({});
+    VALUES("{}");
     """.format(input)
 
     cur.execute(insert_value_statement)
