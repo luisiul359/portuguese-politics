@@ -10,7 +10,13 @@ from parliament.extract import extract_data, get_initiatives_votes, _get_author_
 from app.apis import votes, schemas
 
 
-app = FastAPI()
+
+tags_metadata = [
+    {"name": "Parliament", "description": "Information from Portuguese Parliament API."},
+    {"name": "Elections", "description": "Information from Portuguese previous elections."},
+]
+
+app = FastAPI(openapi_tags=tags_metadata)
 
 
 #data_initiatives = extract_data()
@@ -23,7 +29,7 @@ data_initiatives_votes = pd.read_pickle("data_initiatives_votes.pkl")
 #pd.to_pickle(data_initiatives_votes, "data_initiatives_votes.pkl")
 
 
-@app.get("/party-approvals", response_model=schemas.PartyApprovalsOut)
+@app.get("/parliament/party-approvals", response_model=schemas.PartyApprovalsOut, tags=["Parliament"])
 def get_party_approvals(type: Optional[str] = None, dt_ini: Optional[date] = None, dt_fin: Optional[date] = None):
 
     data_initiatives_votes_ = data_initiatives_votes
@@ -57,7 +63,7 @@ def get_party_approvals(type: Optional[str] = None, dt_ini: Optional[date] = Non
     return {'autores': approvals}
 
 
-@app.get("/party-correlations", response_model=schemas.PartyCorrelationsOut)
+@app.get("/parliament/party-correlations", response_model=schemas.PartyCorrelationsOut, tags=["Parliament"])
 def get_party_correlations(dt_ini: Optional[date] = None, dt_fin: Optional[date] = None):
     
     data_initiatives_votes_ = data_initiatives_votes
@@ -81,7 +87,7 @@ def get_party_correlations(dt_ini: Optional[date] = None, dt_fin: Optional[date]
     return {"partido": res}
 
 
-@app.get("/initiatives")
+@app.get("/parliament/initiatives", tags=["Parliament"])
 def get_initiatives(name_filter: Optional[str] = None, party: Optional[str] = None, deputy: Optional[str] = None,  dt_ini: Optional[date] = None, dt_fin: Optional[date] = None, limit: Optional[int] = 20, offset: Optional[int] = 0):
     
     data_initiatives_votes_ = data_initiatives_votes
