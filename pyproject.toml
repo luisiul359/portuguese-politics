@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "parliament"
-version = "0.1.0"
-description = "Extract information from Portuguese Parliament API."
+name = "portuguese_politics"
+version = "0.2.0"
+description = "Extract information from different sources regarding Portuguese Politics."
 authors = ["Luis Silva <luisiul359@gmail.com>"]
-packages = [ { include = "parliament" }, { include = "app" } ]
+packages = [ { include = "parliament" }, { include = "elections" }, { include = "app" } ]
 
 [tool.poetry.dependencies]
 python = "3.6.15"

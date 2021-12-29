@@ -7,8 +7,8 @@ from fastapi import FastAPI
 from datetime import date
 
 from parliament.extract import extract_data, get_initiatives_votes, _get_author_deputy
+from elections.extract import extract_legislativas_2019
 from app.apis import votes, schemas
-
 
 
 tags_metadata = [
@@ -115,3 +115,40 @@ def get_initiatives(name_filter: Optional[str] = None, party: Optional[str] = No
         res.append(initiative)
 
     return {"initiativas": res}
+
+
+# load legislativas data into memory
+parties_legislativas_2019, candidates_legislativas_2019 = extract_legislativas_2019()
+
+
+@app.get("/elections/parties", tags=["Elections"])
+def get_elections_parties(type: Optional[str] = "Legislativas", year: Optional[int] = 2019):
+
+    # ignoring input parameters until we have other elections
+
+    return {'parties': json.loads(parties_legislativas_2019.to_json(orient="index"))}
+
+
+@app.get("/elections/candidates", tags=["Elections"])
+def get_party_candidates(party: Optional[str], type: Optional[str] = "Legislativas", year: Optional[int] = 2019):
+
+    # ignoring some input parameters until we have other elections
+
+    candidates_legislativas_2019_ = candidates_legislativas_2019[candidates_legislativas_2019["party"] == party]
+
+    return {'candidates': json.loads(candidates_legislativas_2019_.to_json(orient="records"))}
+
+
+@app.get("/elections/candidates-district", tags=["Elections"])
+def get_district_candidates(district: str, type: Optional[str] = "Legislativas", year: Optional[int] = 2019, party: Optional[str] = None):
+
+    # ignoring some input parameters until we have other elections
+    
+    candidates_legislativas_2019_ = candidates_legislativas_2019
+    
+    if party:
+        candidates_legislativas_2019_ = candidates_legislativas_2019_[candidates_legislativas_2019_["party"] == party]
+
+    candidates_legislativas_2019_ = candidates_legislativas_2019_[candidates_legislativas_2019_["district"] == district]
+
+    return {'candidates': json.loads(candidates_legislativas_2019_.to_json(orient="records"))}

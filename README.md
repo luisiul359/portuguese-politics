@@ -1,6 +1,18 @@
-# Portuguese Parliament data extractor
+# Portuguese Politics data extractor
 
-From the public Portuguese Parliament API provides several ready to use endpoints. Currently it provides raw data and vote information.
+Extracts information from:
+
+* the [public Portuguese Parliament API](https://www.parlamento.pt/Cidadania/Paginas/DadosAbertos.aspx);
+* the [Política Para Todos community](https://github.com/Politica-Para-Todos).
+
+and expose that information trought a simple to use API.
+
+Currently, the following information is being exposed:
+* Portuguese Parliament initiatives;
+* Portuguese Parliament vote information;
+* Information regarding 2019 Legislativas elections.
+
+All information provided is free of use by anyone, so that they can be used for information dissemination or investigations.
 
 ## Installation
 
