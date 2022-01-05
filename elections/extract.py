@@ -93,7 +93,7 @@ def extract_legislativas_2019() -> Tuple[pd.DataFrame, pd.DataFrame]:
             for c in main_secundary_candidates.get("main", []) + main_secundary_candidates.get("secundary", []):
                 tmp_candidates = {
                     "party": party,
-                    "district": district,
+                    "district": district.strip(),
                     "name": c.get("name", ""),
                     "position": c.get("position", ""),
                     "type": c.get("type", "")
