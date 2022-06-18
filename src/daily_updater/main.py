@@ -16,7 +16,7 @@ from azure.storage.blob import BlobServiceClient, BlobClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
-from daily_updater.parliament.extract import (
+from src.daily_updater.parliament.extract import (
     PATH_XIV,
     ALL_PATHS,
     get_raw_data,
@@ -24,7 +24,7 @@ from daily_updater.parliament.extract import (
     get_initiatives_votes
 )
 
-from daily_updater.parliament.votes import (
+from src.daily_updater.parliament.votes import (
     get_party_approvals,
     get_party_correlations
 )
