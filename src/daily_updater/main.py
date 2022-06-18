@@ -31,7 +31,8 @@ from src.daily_updater.parliament.votes import (
 
 
 logger = logging.getLogger(__name__)
-
+handler = logging.StreamHandler(sys.stdout)
+logger.addHandler(handler)
 
 sched = BlockingScheduler()
 
@@ -131,7 +132,7 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", hour="15", minute="10")
+@sched.scheduled_job("cron", hour="15", minute="37")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
@@ -157,6 +158,8 @@ def main() -> None:
         raw_initiatives = get_raw_data(legislature_path)
         # collect all initiatives, still very raw info
         df_initiatives = get_initiatives(raw_initiatives)
+        # free up memory
+        del raw_initiatives
         # collect vote information from all initiatives
         df_initiatives_votes = get_initiatives_votes(df_initiatives)
 

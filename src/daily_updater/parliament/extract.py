@@ -45,7 +45,12 @@ def get_raw_data(path: str) -> List[Dict]:
       payload = requests.get(
         path,
         # fake, but wihtout it the request is rejected
-        headers={'User-Agent': 'Mozilla/5.0'}
+        headers={
+          'User-Agent': 'Mozilla/5.0',
+          'Connection': 'keep-alive',
+          'Host': 'app.parlamento.pt',
+          'Sec-Fetch-Dest': 'document'
+        }
       )
       assert payload.status_code == 200
 
