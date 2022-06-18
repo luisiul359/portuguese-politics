@@ -1,11 +1,11 @@
 import requests
 import pandas as pd
+import sys
 
 from typing import Dict, List, Union, Any
 from copy import deepcopy
 from collections import defaultdict
 from tqdm import tqdm
-from pathlib import Path
 
 
 def to_list(x: Union[Any, List]) -> List:
@@ -26,12 +26,19 @@ class mydict(dict):
       return default
 
 
-# endpoint updated daily
+# endpoints updated daily
 # XIV Legislatura
-PATH = "https://app.parlamento.pt/webutils/docs/doc.txt?path=6148523063446f764c324679626d56304c3239775a57356b595852684c3052685a47397a51574a6c636e52766379394a626d6c6a6157463061585a68637939595356596c4d6a424d5a57647063327868644856795953394a626d6c6a6157463061585a686331684a566c3971633239754c6e523464413d3d&fich=IniciativasXIV_json.txt&Inline=true"
+PATH_XIV = "https://app.parlamento.pt/webutils/docs/doc.txt?path=6148523063446f764c324679626d56304c3239775a57356b595852684c3052685a47397a51574a6c636e52766379394a626d6c6a6157463061585a68637939595356596c4d6a424d5a57647063327868644856795953394a626d6c6a6157463061585a686331684a566c3971633239754c6e523464413d3d&fich=IniciativasXIV_json.txt&Inline=true"
+# XIV Legislatura
+PATH_XV = "https://app.parlamento.pt/webutils/docs/doc.txt?path=6148523063446f764c324679626d56304c3239775a57356b595852684c3052685a47397a51574a6c636e52766379394a626d6c6a6157463061585a6863793959566955794d45786c5a326c7a6247463064584a684c306c7561574e7059585270646d467a57465a66616e4e76626935306548513d&fich=IniciativasXV_json.txt&Inline=true"
+
+ALL_PATHS = [
+  ("XIV", PATH_XIV), 
+  ("XV", PATH_XV)
+]
 
 
-def get_data(path: str) -> List[Dict]:
+def get_raw_data(path: str) -> List[Dict]:
     """ Load the most recent data provided by Parlamento """
     
     try:
@@ -52,7 +59,7 @@ def get_initiatives_followups(raw_initiatives: List) -> pd.DataFrame:
   """ Create a many to many relationship between initiatives (the main initiative and the folow-up) """
   
   data_initiatives_followups = pd.DataFrame()
-  for initiative in tqdm(raw_initiatives, "get_initiatives_followups"):
+  for initiative in tqdm(raw_initiatives, "getting_initiatives_followups", file=sys.stdout):
     # save all the initiative information to be stored
     info_to_store = {}
 
@@ -83,7 +90,7 @@ def get_initiatives_petitions(raw_initiatives: List) -> pd.DataFrame:
   """ Create a many to many relationship between initiatives and petitions """
   
   data_initiatives_petitions = pd.DataFrame()
-  for initiative in tqdm(raw_initiatives, "get_initiatives_petitions"):
+  for initiative in tqdm(raw_initiatives, "geting_initiatives_petitions", file=sys.stdout):
     # save all the initiative information to be stored
     info_to_store = {}
 
@@ -109,6 +116,41 @@ def get_initiatives_petitions(raw_initiatives: List) -> pd.DataFrame:
   return data_initiatives_petitions
 
 
+def _get_author(initiative: pd.Series) -> str:
+  """
+  Get the correct author of an initiative. That information is spread among 3 columns
+  """
+
+  if initiative["iniciativa_autor_grupos_parlamentares"] == "":
+    # initiative not from parliamentary groups or deputies
+    if initiative["iniciativa_autor_deputados_GPs"] == "":
+      return initiative["iniciativa_autor_outros_nome"]
+    # when "iniciativa_autor_grupos_parlamentares" is not defined we fallback to iniciativa_autor_deputados_GPs
+    else:
+      # ensure we have the name of the unregistered deputy - split from his party midway through his term
+      if initiative["iniciativa_autor_deputados_GPs"] == "Ninsc":
+        return initiative["iniciativa_autor_deputados_nomes"]
+      else:
+        distribution = pd.Series(initiative["iniciativa_autor_deputados_GPs"].split("|")).value_counts()
+        return "|".join(distribution.index.values)
+  else:
+    return initiative["iniciativa_autor_grupos_parlamentares"]
+
+
+def _get_author_deputy(initiative: pd.Series) -> str:
+  """
+  Get the correct deputy author of an initiative. That information is spread among 3 columns
+  """
+  
+  if initiative["iniciativa_autor_deputados_nomes"] == "":
+    if initiative["iniciativa_autor_outros_nome"] == "Grupos Parlamentares":
+      return initiative["iniciativa_autor_grupos_parlamentares"]
+    else:
+      return initiative["iniciativa_autor_outros_nome"]
+  else:
+    return initiative["iniciativa_autor_deputados_nomes"]
+  
+
 def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
   """
   Parse parlamento API and return the main information of each initiative.
@@ -117,7 +159,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
   """
   
   data_initiatives = pd.DataFrame()
-  for initiative in tqdm(raw_initiatives, "get_initiatives"):
+  for initiative in tqdm(raw_initiatives, "getting_initiatives", file=sys.stdout):
     # save all the initiative information to be stored
     info_to_store = {}
 
@@ -272,6 +314,11 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
         ignore_index = True
       )
       
+  # enhance data with processed fields
+  data_initiatives["iniciativa_autor"] = data_initiatives.apply(_get_author, axis="columns")
+  data_initiatives["iniciativa_autor_deputado"] = data_initiatives.apply(_get_author_deputy, axis="columns")
+  data_initiatives["iniciativa_evento_data"] = pd.to_datetime(data_initiatives["iniciativa_evento_data"])
+
   return data_initiatives
 
 
@@ -308,41 +355,6 @@ def _split_vote_result(vote: str) -> Dict[str, list]:
   return result
 
 
-def _get_author(initiative: pd.Series) -> str:
-  """
-  Get the correct author of an initiative. That information is spread among 3 columns
-  """
-
-  if initiative["iniciativa_autor_grupos_parlamentares"] == "":
-    # initiative not from parliamentary groups or deputies
-    if initiative["iniciativa_autor_deputados_GPs"] == "":
-      return initiative["iniciativa_autor_outros_nome"]
-    # when "iniciativa_autor_grupos_parlamentares" is not defined we fallback to iniciativa_autor_deputados_GPs
-    else:
-      # ensure we have the name of the unregistered deputy - split from his party midway through his term
-      if initiative["iniciativa_autor_deputados_GPs"] == "Ninsc":
-        return initiative["iniciativa_autor_deputados_nomes"]
-      else:
-        distribution = pd.Series(initiative["iniciativa_autor_deputados_GPs"].split("|")).value_counts()
-        return "|".join(distribution.index.values)
-  else:
-    return initiative["iniciativa_autor_grupos_parlamentares"]
-
-
-def _get_author_deputy(initiative: pd.Series) -> str:
-  """
-  Get the correct deputy author of an initiative. That information is spread among 3 columns
-  """
-  
-  if initiative["iniciativa_autor_deputados_nomes"] == "":
-    if initiative["iniciativa_autor_outros_nome"] == "Grupos Parlamentares":
-      return initiative["iniciativa_autor_grupos_parlamentares"]
-    else:
-      return initiative["iniciativa_autor_outros_nome"]
-  else:
-    return initiative["iniciativa_autor_deputados_nomes"]
-  
-
 def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
   """
   Collect vote information from each initiative.
@@ -352,7 +364,7 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
   columns_to_keep = ["iniciativa_id","iniciativa_nr","iniciativa_tipo","iniciativa_titulo","iniciativa_evento_fase","iniciativa_evento_data","iniciativa_url","iniciativa_obs","iniciativa_texto_subst","iniciativa_autor_grupos_parlamentares","iniciativa_autor_outros_nome","iniciativa_autor_outros_autor_comissao","iniciativa_autor_deputados_nomes","iniciativa_autor_deputados_GPs","iniciativa_votacao_res","iniciativa_votacao_desc"]
 
   data_initiatives = pd.DataFrame()
-  for _, row in tqdm(initiatives.iterrows(), "get_initiatives_votes", len(initiatives)):
+  for _, row in tqdm(initiatives.iterrows(), "getting_initiatives_votes", len(initiatives), file=sys.stdout):
     columns_to_store = row[columns_to_keep].copy()
     
     if row["iniciativa_votacao_detalhe"]:
@@ -373,50 +385,6 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
       data_initiatives = data_initiatives.append(columns_to_store)
 
   # enhance data with processed fields
-  data_initiatives["iniciativa_autor"] = data_initiatives.apply(_get_author, axis="columns")
-  data_initiatives["iniciativa_autor_deputado"] = data_initiatives.apply(_get_author_deputy, axis="columns")
   data_initiatives["iniciativa_aprovada"] = data_initiatives["iniciativa_votacao_res"] == "Aprovado"
-  data_initiatives["iniciativa_evento_data"] = pd.to_datetime(data_initiatives["iniciativa_evento_data"])
 
   return data_initiatives
-
-
-def extract_data():
-    # load data from parlamento API
-    raw_initiatives = get_data(PATH)
-
-    #data_initiatives_followups = get_initiatives_followups(raw_initiatives)
-    #data_initiatives_petitions = get_initiatives_petitions(raw_initiatives)
-
-    #if Path("data_initiatives.pkl").is_file():
-    #  data_initiatives = pd.read_pickle("data_initiatives.pkl")
-    #else:
-    data_initiatives = get_initiatives(raw_initiatives)
-    #pd.to_pickle(data_initiatives, "data_initiatives.pkl")
-
-    return data_initiatives
-
-
-if __name__ == "__main__":
-    # load data from parlamento API
-    raw_initiatives = get_data(PATH)
-
-    data_initiatives_followups = get_initiatives_followups(raw_initiatives)
-
-    data_initiatives_petitions = get_initiatives_petitions(raw_initiatives)
-
-    if Path("data_initiatives.pkl").is_file():
-      data_initiatives = pd.read_pickle("data_initiatives.pkl")
-    else:
-      data_initiatives = get_initiatives(raw_initiatives)
-      pd.to_pickle(data_initiatives, "data_initiatives.pkl")
-
-    if Path("data_initiatives_votes.pkl").is_file():
-      data_initiatives_votes = pd.read_pickle("data_initiatives_votes.pkl")
-    else:
-      data_initiatives_votes = get_initiatives_votes(data_initiatives)
-      pd.to_pickle(data_initiatives_votes, "data_initiatives_votes.pkl")
-    
-    data_initiatives_votes.to_excel("output.xlsx")
-
-    print(data_initiatives_votes.head())
