@@ -16,7 +16,7 @@ from azure.storage.blob import BlobServiceClient, BlobClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
-from src.daily_updater.parliament.extract import (
+from daily_updater.parliament.extract import (
     PATH_XIV,
     ALL_PATHS,
     get_raw_data,
@@ -24,7 +24,7 @@ from src.daily_updater.parliament.extract import (
     get_initiatives_votes
 )
 
-from src.daily_updater.parliament.votes import (
+from daily_updater.parliament.votes import (
     get_party_approvals,
     get_party_correlations
 )
@@ -131,7 +131,7 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", day="*/1", hour="12", minute="10")
+@sched.scheduled_job("cron", day="*/1", hour="15", minute="30")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()

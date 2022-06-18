@@ -5,7 +5,8 @@ description = "Extract information from different sources regarding Portuguese P
 authors = ["Luis Silva <luisiul359@gmail.com>"]
 packages = [ 
     { include = "elections", from = "src" }, 
-    { include = "app", from = "src" } 
+    { include = "app", from = "src" },
+    { include = "daily_updater", from = "src" } 
 ]
 
 [tool.poetry.dependencies]
