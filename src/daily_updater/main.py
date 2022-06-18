@@ -131,7 +131,7 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", day="*/1", hour="12", minutes="10")
+@sched.scheduled_job("cron", day="*/1", hour="12", minute="10")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
