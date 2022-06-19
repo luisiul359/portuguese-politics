@@ -40,17 +40,19 @@ ALL_PATHS = [
 
 def get_raw_data(path: str) -> List[Dict]:
     """ Load the most recent data provided by Parlamento """
+
+    import os
+    proxyDict = {
+      "http"  : os.environ.get('IPB_HTTP', ''),
+      "https" : os.environ.get('IPB_HTTPS', '')
+    }
     
     try:
       payload = requests.get(
         path,
         # fake, but wihtout it the request is rejected
-        headers={
-          'User-Agent': 'Mozilla/5.0',
-          'Connection': 'keep-alive',
-          'Host': 'app.parlamento.pt',
-          'Sec-Fetch-Dest': 'document'
-        }
+        headers={'User-Agent': 'Mozilla/5.0'},
+        proxies=proxyDict
       )
       assert payload.status_code == 200
 
