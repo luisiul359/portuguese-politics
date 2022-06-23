@@ -46,7 +46,7 @@ def get_raw_data_from_blob(blob_container: BlobContainerClient, legislature_name
     
     try:
       data = blob_container.get_blob_client(f"{legislature_name}.json")
-      raw_data = json.loads(data)
+      raw_data = json.loads(data.download_blob().readall())
 
       return raw_data.get("ArrayOfPt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", {}).get("pt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", [])
     except Exception as e:
