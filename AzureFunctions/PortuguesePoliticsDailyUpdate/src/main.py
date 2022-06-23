@@ -41,10 +41,6 @@ def get_raw_data(path: str) -> List[Dict]:
       )
       assert payload.status_code == 200
 
-      logger.info(payload.request.url)
-      logger.info(payload.request.body)
-      logger.info(payload.request.headers)
-
       return payload.json()
     except Exception:
       logger.exception(f"Error downloading {path}.")
@@ -81,7 +77,7 @@ def main(mytimer: func.TimerRequest) -> None:
     if mytimer.past_due:
         logger.info("The timer is past due!")
 
-    logger.info("Portuguese Politics daily updater function ran at %s", utc_timestamp)
+    logger.info("Portuguese Politics daily extracter function ran at %s", utc_timestamp)
 
     # Get Blob Storage client
     blob_storage_container_client = get_blob_container()

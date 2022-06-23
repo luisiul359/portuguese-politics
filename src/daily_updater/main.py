@@ -19,7 +19,7 @@ from tqdm import tqdm
 from src.daily_updater.parliament.extract import (
     PATH_XIV,
     ALL_PATHS,
-    get_raw_data,
+    get_raw_data_from_blob,
     get_initiatives,
     get_initiatives_votes
 )
@@ -132,7 +132,7 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", hour="20", minute="40")
+@sched.scheduled_job("cron", hour="18", minute="45")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
@@ -151,11 +151,11 @@ def main() -> None:
     recreate_all_cosmos_containers(database)
 
     # Go through each supported legislature and populate the database
-    for legislature_name, legislature_path in tqdm([("XIV", PATH_XIV)], "processing_legislatures", file=sys.stdout): 
-    #for legislature_name, legislature_path in tqdm(ALL_PATHS, "processing_legislatures", file=sys.stdout):
+    for legislature_name, _ in tqdm([("XIV", PATH_XIV)], "processing_legislatures", file=sys.stdout): 
+    #for legislature_name, _ in tqdm(ALL_PATHS, "processing_legislatures", file=sys.stdout):
 
         # load raw data (still json) from parlamento API
-        raw_initiatives = get_raw_data(legislature_path)
+        raw_initiatives = get_raw_data_from_blob(blob_storage_container_client, legislature_name)
         # collect all initiatives, still very raw info
         df_initiatives = get_initiatives(raw_initiatives)
         # free up memory

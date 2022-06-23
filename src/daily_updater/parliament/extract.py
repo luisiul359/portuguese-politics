@@ -1,11 +1,14 @@
 import requests
 import pandas as pd
 import sys
+import json
 
 from typing import Dict, List, Union, Any
 from copy import deepcopy
 from collections import defaultdict
 from tqdm import tqdm
+
+from azure.storage.blob import ContainerClient as BlobContainerClient
 
 
 def to_list(x: Union[Any, List]) -> List:
@@ -36,6 +39,19 @@ ALL_PATHS = [
   ("XIV", PATH_XIV), 
   ("XV", PATH_XV)
 ]
+
+
+def get_raw_data_from_blob(blob_container: BlobContainerClient, legislature_name: str) -> List[Dict]:
+    """ Load the most recent data provided by Parlamento cached in our Blob Storage """
+    
+    try:
+      data = blob_container.get_blob_client(f"{legislature_name}.json")
+      raw_data = json.loads(data)
+
+      return raw_data.get("ArrayOfPt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", {}).get("pt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", [])
+    except Exception as e:
+      print(blob_container.container_name)
+      raise e
 
 
 def get_raw_data(path: str) -> List[Dict]:
