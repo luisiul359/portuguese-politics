@@ -31,8 +31,8 @@ from src.daily_updater.parliament.votes import (
 
 
 logger = logging.getLogger(__name__)
-handler = logging.StreamHandler(sys.stdout)
-logger.addHandler(handler)
+#handler = logging.StreamHandler(sys.stdout)
+#logger.addHandler(handler)
 
 sched = BlockingScheduler()
 
@@ -132,7 +132,7 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", hour="21", minute="17")
+@sched.scheduled_job("cron", hour="6", minute="22")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
@@ -184,6 +184,11 @@ def main() -> None:
             #
             # each row is a certain stage of an initiative.
             # for the votes we filtered by stages that had a vote moment
+
+            # convert to epoch time to avoid serializable issues
+            for col in initiatives.select_dtypes(include="datetime").columns:
+                initiatives[col] = initiatives[col].apply(lambda x: x.value)
+
             for initiative in tqdm(initiatives.head(1000).to_dict("records"), f"populating_{name}", file=sys.stdout):
                 container.upsert_item({
                     "legislature_name": legislature_name,
