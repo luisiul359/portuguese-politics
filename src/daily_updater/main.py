@@ -132,7 +132,7 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", hour="16", minute="47")
+@sched.scheduled_job("cron", hour="16", minute="57")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
@@ -209,6 +209,7 @@ def main() -> None:
              }
             container.upsert_item({
                 "legislature_name": legislature_name,
+                "id": "asdsadasdsda",
                 **c
             })
 
