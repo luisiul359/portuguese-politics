@@ -132,7 +132,7 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", hour="6", minute="22")
+@sched.scheduled_job("cron", hour="4", minute="10")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
@@ -148,7 +148,8 @@ def main() -> None:
     # The idea is to update daily the information from parliament data, thus
     # I need to delete old data and populate with new data.
     # In Cosmos DB the fastest way to do it is to recreate the containers
-    recreate_all_cosmos_containers(database)
+    
+    #recreate_all_cosmos_containers(database)
 
     # Go through each supported legislature and populate the database
     for legislature_name, _ in tqdm([("XIV", PATH_XIV)], "processing_legislatures", file=sys.stdout): 
@@ -157,7 +158,9 @@ def main() -> None:
         # load raw data (still json) from parlamento API
         raw_initiatives = get_raw_data_from_blob(blob_storage_container_client, legislature_name)
         # collect all initiatives, still very raw info
-        df_initiatives = get_initiatives(raw_initiatives)
+        #df_initiatives = get_initiatives(raw_initiatives)
+        import pandas as pd
+        df_initiatives = pd.read_pickle("df_initiatives.pkl")
         # free up memory
         del raw_initiatives
         # collect vote information from all initiatives
@@ -188,6 +191,10 @@ def main() -> None:
             # convert to epoch time to avoid serializable issues
             for col in initiatives.select_dtypes(include="datetime").columns:
                 initiatives[col] = initiatives[col].apply(lambda x: x.value)
+
+            # convert all nan to "", besides date and "iniciativa_aprovada" that
+            # do not have nan all remaining columns are strings
+            initiatives.fillna("", inplace=True)
 
             for initiative in tqdm(initiatives.head(1000).to_dict("records"), f"populating_{name}", file=sys.stdout):
                 container.upsert_item({
