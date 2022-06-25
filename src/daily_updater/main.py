@@ -132,14 +132,12 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", hour="15", minute="46")
+@sched.scheduled_job("cron", hour="16", minute="2")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
 
     logger.info("Portuguese Politics daily updater ran at %s", utc_timestamp)
-
-    print("TEST!!")
 
     # Get Blob Storage client
     blob_storage_container_client = get_blob_container()
@@ -199,6 +197,7 @@ def main() -> None:
             initiatives.fillna("", inplace=True)
 
             for initiative in tqdm(initiatives.head(1000).to_dict("records"), f"populating_{name}", file=sys.stdout):
+                print(initiative)
                 container.upsert_item({
                     "legislature_name": legislature_name,
                     **initiative
