@@ -337,7 +337,11 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
 
   return data_initiatives
 
-
+# Improve: in some of the following situations I could maybe infer the vote
+#          of some parties
+# https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=44422
+# https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=44343
+# https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=120916
 def _split_vote_result(vote: str) -> Dict[str, list]:
   """
   Extract vote result from poll

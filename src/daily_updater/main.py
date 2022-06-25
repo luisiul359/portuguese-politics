@@ -32,8 +32,8 @@ from src.daily_updater.parliament.votes import (
 
 
 logger = logging.getLogger(__name__)
-#handler = logging.StreamHandler(sys.stdout)
-#logger.addHandler(handler)
+handler = logging.StreamHandler(sys.stdout)
+logger.addHandler(handler)
 
 sched = BlockingScheduler()
 
@@ -106,7 +106,6 @@ def get_cosmos_container(database: CosmosClient, container_name: str) -> Contain
         logger.exception(f"Error connecting to container {container_name}:")
         raise
         
-
     return container
 
 
@@ -133,7 +132,7 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", hour="20", minute="47")
+@sched.scheduled_job("cron", hour="3", minute="00")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
@@ -149,19 +148,15 @@ def main() -> None:
     # The idea is to update daily the information from parliament data, thus
     # I need to delete old data and populate with new data.
     # In Cosmos DB the fastest way to do it is to recreate the containers
-    
-    #recreate_all_cosmos_containers(database)
+    recreate_all_cosmos_containers(database)
 
     # Go through each supported legislature and populate the database
-    for legislature_name, _ in tqdm([("XIV", PATH_XIV)], "processing_legislatures", file=sys.stdout): 
-    #for legislature_name, _ in tqdm(ALL_PATHS, "processing_legislatures", file=sys.stdout):
+    for legislature_name, _ in tqdm(ALL_PATHS, "processing_legislatures", file=sys.stdout):
 
-        # load raw data (still json) from parlamento API
+        # load raw data (json format) from Blob Sotrage (cache from parlamento API)
         raw_initiatives = get_raw_data_from_blob(blob_storage_container_client, legislature_name)
         # collect all initiatives, still very raw info
-        #df_initiatives = get_initiatives(raw_initiatives)
-        import pandas as pd
-        df_initiatives = pd.read_pickle("df_initiatives.pkl")
+        df_initiatives = get_initiatives(raw_initiatives)
         # free up memory
         del raw_initiatives
         # collect vote information from all initiatives
@@ -197,8 +192,7 @@ def main() -> None:
             # do not have nan all remaining columns are strings
             initiatives.fillna("", inplace=True)
 
-            for initiative in tqdm(initiatives.head(1000).to_dict("records"), f"populating_{name}", file=sys.stdout):
-                logger.info(initiative)
+            for initiative in tqdm(initiatives.to_dict("records"), f"populating_{name}", file=sys.stdout):
                 container.upsert_item({
                     "legislature_name": legislature_name,
                     "id": str(uuid.uuid4()),

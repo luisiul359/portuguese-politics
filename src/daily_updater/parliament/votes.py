@@ -57,3 +57,40 @@ def get_party_correlations(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame
 
     return pd.DataFrame(res, index=parties_columns).reset_index().rename(columns = {'index':'nome'})
 
+
+def collect_parties_strange_votes(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
+    """
+    Return all entries where the party did not approve its own initiatives.
+
+    In the following situations a party can vote different from approve its
+    own initiatives:
+
+    * In Portugal parties with just 1 deputy can't attend commissions where some topics 
+    are discussed and voted, even when the initiative its from that party.
+
+    * When the final document is the merge of similar initiatives and the party
+    does not agree with that final document
+
+    * In Portugal the deputies must vote equal to the party, but in some situations
+    they can vote independently, in those situations we are filling the columns
+    "iniciativa_votacao_outros_*" and not the party column
+    """
+
+    parties_columns = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]
+    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra".split()
+    parties_columns = list(set(parties_columns) - set(to_exclude))
+
+    data = []
+    for col in parties_columns:
+        party = col.replace("iniciativa_votacao_", "").replace("cr", "CRISTINA RODRIGUES").replace("jkm", "JOACINE KATAR MOREIRA").upper()
+
+        mask = (data_initiatives_votes["iniciativa_autor"] == party) & ((data_initiatives_votes[col] != "afavor") | data_initiatives_votes[col].isnull())
+        errors = data_initiatives_votes.loc[mask, col]
+
+        data.append({
+            "party": party,
+            "invalid_entries": len(errors) / (data_initiatives_votes["iniciativa_autor"] == party).sum()
+        })
+
+
+    return pd.DataFrame(data).set_index("party")
