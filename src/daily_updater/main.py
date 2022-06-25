@@ -132,7 +132,7 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", hour="16", minute="7")
+@sched.scheduled_job("cron", hour="16", minute="28")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
@@ -177,6 +177,14 @@ def main() -> None:
 
             logger.info(f"Processing {name}..")
 
+
+            c = {'iniciativa_anexo_nome': '', 'iniciativa_anexo_url': '', 'iniciativa_anexos_URLs': '', 'iniciativa_anexos_nomes': '', 'iniciativa_autor_deputados_GPs': 'PCP|PCP|PCP|PCP|PCP|PCP|PCP|PCP|PCP|PCP', 'iniciativa_autor_deputados_nomes': 'JOÃO DIAS|PAULA SANTOS|ANTÓNIO FILIPE|DIANA FERREIRA|BRUNO DIAS|DUARTE ALVES|VERA PRATA|JERÓNIMO DE SOUSA|ANA MESQUITA|ALMA RIVERA', 'iniciativa_autor_grupos_parlamentares': 'PCP', 'iniciativa_autor_outros_autor_comissao': '', 'iniciativa_autor_outros_nome': 'Grupos Parlamentares', 'iniciativa_comissao_competente': '', 'iniciativa_comissao_data_relatorio': '', 'iniciativa_comissao_documentos_Tipos': '', 'iniciativa_comissao_documentos_Titulos': '', 'iniciativa_comissao_documentos_URLs': '', 'iniciativa_comissao_nome': '', 'iniciativa_comissao_observacao': '', 'iniciativa_comissao_pareceres_recebidos': '', 'iniciativa_comissao_pedidos_parecer': '', 'iniciativa_comissao_publicacao_Obs': [''], 'iniciativa_comissao_publicacao_Pags': '', 'iniciativa_comissao_publicacao_Tipo': [''], 'iniciativa_comissao_publicacao_URL': [''], 'iniciativa_comissao_votacao_Data': '', 'iniciativa_comissao_votacao_Desc': '', 'iniciativa_comissao_votacao_Res': '', 'iniciativa_comissao_votacao_Unanime': '', 'iniciativa_evento_data': 1595894400000000000, 'iniciativa_evento_fase': 'Entrada', 'iniciativa_evento_id': '1', 'iniciativa_id': '45156', 'iniciativa_iniciativas_conjuntas_tipo': '', 'iniciativa_iniciativas_conjuntas_titulo': '', 'iniciativa_nr': '28', 'iniciativa_obs': '', 'iniciativa_oradores_deputados_gp': '', 'iniciativa_oradores_deputados_nomes': '', 'iniciativa_oradores_governo_cargo': '', 'iniciativa_oradores_governo_nomes': '', 'iniciativa_oradores_videos': '', 'iniciativa_origem_assunto': '', 'iniciativa_origem_desc': '', 'iniciativa_origem_id': '', 'iniciativa_origem_nr': '', 'iniciativa_publicacao_Obs': [''], 'iniciativa_publicacao_Pags': '', 'iniciativa_publicacao_Tipo': [''], 'iniciativa_publicacao_URL': [''], 'iniciativa_texto_subst': '', 'iniciativa_tipo': 'Apreciação Parlamentar', 'iniciativa_titulo': 'Decreto-Lei n.º 29/2020, de 29 de junho, que "Cria um programa de apoio ao emparcelamento rural simples, designado «Emparcelar para Ordenar»"', 'iniciativa_url': 'http://app.parlamento.pt/webutils/docs/doc.pdf?path=6148523063484d364c793968636d356c6443397a6158526c6379395953565a4d5a5763765247396a6457316c626e527663306c7561574e7059585270646d45764f445134595467794d6d59744f444d33596930304e6d55314c5467784e4755744e6a4a6c5954453459545a6c5a6a6b304c6d527659773d3d&fich=848a822f-837b-46e5-814e-62ea18a6ef94.doc&Inline=true', 'iniciativa_votacao_ausencias': '', 'iniciativa_votacao_desc': '', 'iniciativa_votacao_detalhe': '', 'iniciativa_votacao_res': '', 'iniciativa_votacao_tipo_reuniao': '', 'iniciativa_votacao_unanime': '', 'iniciativa_autor': 'PCP', 'iniciativa_autor_deputado': 'JOÃO DIAS|PAULA SANTOS|ANTÓNIO FILIPE|DIANA FERREIRA|BRUNO DIAS|DUARTE ALVES|VERA PRATA|JERÓNIMO DE SOUSA|ANA MESQUITA|ALMA RIVERA'}
+            container.upsert_item({
+                "legislature_name": legislature_name,
+                **c
+            })
+
+
             # it seems bulk insert are not supported in Python SDK
             # https://docs.microsoft.com/en-us/python/api/overview/azure/cosmos-readme?view=azure-python#limitations
             # therefore we will insert one by one, which is not an issue since
@@ -197,7 +205,7 @@ def main() -> None:
             initiatives.fillna("", inplace=True)
 
             for initiative in tqdm(initiatives.head(1000).to_dict("records"), f"populating_{name}", file=sys.stdout):
-                print(initiative)
+                logger.info(initiative)
                 container.upsert_item({
                     "legislature_name": legislature_name,
                     **initiative
