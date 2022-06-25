@@ -132,12 +132,14 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", hour="3", minute="20")
+@sched.scheduled_job("cron", hour="15", minute="46")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
 
     logger.info("Portuguese Politics daily updater ran at %s", utc_timestamp)
+
+    print("TEST!!")
 
     # Get Blob Storage client
     blob_storage_container_client = get_blob_container()
