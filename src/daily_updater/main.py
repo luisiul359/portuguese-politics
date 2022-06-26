@@ -18,7 +18,6 @@ from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
 from src.daily_updater.parliament.extract import (
-    PATH_XIV,
     ALL_PATHS,
     get_raw_data_from_blob,
     get_initiatives,
@@ -161,6 +160,11 @@ def main() -> None:
         del raw_initiatives
         # collect vote information from all initiatives
         df_initiatives_votes = get_initiatives_votes(df_initiatives)
+
+        # store initiative votes in Blob Storage, already processed
+        initiatives_votes = df_initiatives_votes.to_json(orient="index")
+        blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}_initiatives_votes.json")
+        blob_client.upload_blob(initiatives_votes, overwrite=True)
 
         # get containers' clients
         initiatives_container = get_cosmos_container(database, "initiatives")

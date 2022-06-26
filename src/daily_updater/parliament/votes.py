@@ -9,6 +9,9 @@ def get_party_approvals(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     """
     Manipulate the votes to get the percentage of approval per party for each other party
     """
+
+    if len(data_initiatives_votes) == 0:
+        return pd.DataFrame()
     
     # get all party votes fields
     parties_vote_direction_fields = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]
@@ -36,6 +39,9 @@ def get_party_correlations(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame
     """
     Compute the number of times each party pair voted the same
     """
+
+    if len(data_initiatives_votes) == 0:
+        return pd.DataFrame()
 
     # get all party votes fields
     parties_columns = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]

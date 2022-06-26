@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-.PHONY = setup init run run_extract test clean
+.PHONY = setup init run test clean
 
 # Defines the default target that `make` will try to make, or in the case of a phony target, execute the specified commands
 # This target is executed whenever we just type `make`
@@ -15,10 +15,7 @@ init:
 	poetry install
 
 run:
-	poetry run uvicorn src.app.main:app --reload
-
-run_extract:
-	time poetry run python src/parliament/extract.py
+	poetry run uvicorn src.app.main:app --reload --env-file .env
 
 test:
 	#mkdir -p data
