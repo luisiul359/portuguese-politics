@@ -4,7 +4,6 @@ import os
 import sys
 import logging
 
-from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI
 from datetime import date
@@ -12,16 +11,14 @@ from dotenv import load_dotenv
 
 from azure.cosmos import (
     CosmosClient,
-    PartitionKey,
     DatabaseProxy,
-    ContainerProxy
 )
-from azure.storage.blob import BlobServiceClient, BlobClient
+from azure.storage.blob import BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 
 from src.elections.extract import extract_legislativas_2019
 from src.daily_updater.parliament import votes
-from app.apis import schemas
+from src.app.apis import schemas
 
 
 load_dotenv(dotenv_path=".env")
