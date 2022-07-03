@@ -231,11 +231,11 @@ def get_party_correlations(legislature: Optional[str] = "XV", type: Optional[str
 
     return {"partido": res}
 
-"""
+
 @app.get("/parliament/initiatives", tags=["Parliament"])
 def get_initiatives(legislature: Optional[str] = "XV", name_filter: Optional[str] = None, party: Optional[str] = None, deputy: Optional[str] = None,  dt_ini: Optional[date] = None, dt_fin: Optional[date] = None, limit: Optional[int] = 20, offset: Optional[int] = 0):
     
-    data_initiatives_votes_ = data_initiatives_votes
+    data_initiatives_votes_ = initiative_votes[legislature]
     
     if dt_ini:
         data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini]
@@ -260,7 +260,7 @@ def get_initiatives(legislature: Optional[str] = "XV", name_filter: Optional[str
         res.append(initiative)
 
     return {"initiativas": res}
-"""
+
 
 @app.get("/elections/parties", tags=["Elections"])
 def get_elections_parties(type: Optional[str] = "Legislativas", year: Optional[int] = 2019):
