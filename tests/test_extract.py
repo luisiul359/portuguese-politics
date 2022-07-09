@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from src.parliament.extract import _split_vote_result, mydict
+from src.daily_updater.parliament.extract import _split_vote_result, mydict
 
 
 class TestProvider(TestCase):
