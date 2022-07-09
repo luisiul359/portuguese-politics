@@ -147,7 +147,7 @@ def main() -> None:
     # The idea is to update daily the information from parliament data, thus
     # I need to delete old data and populate with new data.
     # In Cosmos DB the fastest way to do it is to recreate the containers
-    recreate_all_cosmos_containers(database)
+    ##recreate_all_cosmos_containers(database)
 
     # Go through each supported legislature and populate the database
     for legislature_name, _ in tqdm(ALL_PATHS, "processing_legislatures", file=sys.stdout):
@@ -165,7 +165,7 @@ def main() -> None:
         initiatives_votes = df_initiatives_votes.to_json(orient="index")
         blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}_initiatives_votes.json")
         blob_client.upload_blob(initiatives_votes, overwrite=True)
-
+        
         # get containers' clients
         initiatives_container = get_cosmos_container(database, "initiatives")
         initiatives_votes_container = get_cosmos_container(database, "initiatives_votes")
@@ -195,14 +195,14 @@ def main() -> None:
             # convert all nan to "", besides date and "iniciativa_aprovada" that
             # do not have nan all remaining columns are strings
             initiatives.fillna("", inplace=True)
-
+            """
             for initiative in tqdm(initiatives.to_dict("records"), f"populating_{name}", file=sys.stdout):
                 container.upsert_item({
                     "legislature_name": legislature_name,
                     "id": str(uuid.uuid4()),
                     **initiative
                 })
-
+            """
         # Azure Cosmos DB free tier only support 2 containers, thus
         # we will store the remaining info in Azure Blob Storage
         party_approvals = get_party_approvals(df_initiatives_votes).to_json(orient="index")
