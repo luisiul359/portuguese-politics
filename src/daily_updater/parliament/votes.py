@@ -51,8 +51,8 @@ def get_party_correlations(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame
     res = defaultdict(list)
     for party_a in parties_columns:
         for party_b in parties_columns:
-            pa = data_initiatives_votes.loc[data_initiatives_votes[party_a] != "ausência", party_a]
-            pb = data_initiatives_votes.loc[data_initiatives_votes[party_b] != "ausência", party_b]
+            pa = data_initiatives_votes.loc[~data_initiatives_votes[party_a].isin(["ausência", ""]), party_a]
+            pb = data_initiatives_votes.loc[~data_initiatives_votes[party_b].isin(["ausência", ""]), party_b]
             corr = pd.crosstab(pa, pb, margins=True)
             diag = np.diag(corr)
             

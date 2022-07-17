@@ -1,11 +1,11 @@
-# Portuguese Politics data extractor
+# Portuguese Politics API
 
 Extracts information from:
 
-* the [public Portuguese Parliament API](https://www.parlamento.pt/Cidadania/Paginas/DadosAbertos.aspx);
-* the [Política Para Todos community](https://github.com/Politica-Para-Todos).
+* [public Portuguese Parliament API](https://www.parlamento.pt/Cidadania/Paginas/DadosAbertos.aspx);
+* [Política Para Todos community](https://github.com/Politica-Para-Todos).
 
-and expose that information through a simple to use API.
+and expose that information through a simple to use [API](https://portuguese-politics.herokuapp.com/docs).
 
 Currently, the following information is being exposed:
 * Portuguese Parliament initiatives;
@@ -27,3 +27,5 @@ Still in development mode.
 ```bash
 make run
 ```
+## Components
+
