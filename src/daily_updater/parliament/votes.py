@@ -119,6 +119,6 @@ def get_initiatives(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
         "iniciativa_evento_fase": "iniciativa_fase"
         }, axis="columns")
 
-    df["iniciativa_data"] = df["iniciativa_data"].dt.strftime("%Y-%m-%d").reset_index().rename(columns={"index": "iniciativa_id"})
-
-    return df
+    df["iniciativa_data"] = df["iniciativa_data"].dt.strftime("%Y-%m-%d")
+    
+    return df.reset_index().rename(columns={"index": "iniciativa_id"})
