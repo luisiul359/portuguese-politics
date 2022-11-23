@@ -112,7 +112,7 @@ def get_initiatives(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra".split()
     parties_vote_direction_fields = list(set(parties_vote_direction_fields) - set(to_exclude))
 
-    columns = ["iniciativa_evento_fase", "iniciativa_titulo", "iniciativa_url", "iniciativa_autor", "iniciativa_autor_deputados_nomes", "iniciativa_evento_data", "iniciativa_tipo", "iniciativa_votacao_res"] + parties_vote_direction_fields
+    columns = ["iniciativa_evento_fase", "iniciativa_titulo", "iniciativa_url", "iniciativa_autor", "iniciativa_autor_deputados_nomes", "iniciativa_evento_data", "iniciativa_tipo", "iniciativa_votacao_res", "iniciativa_votacao_unanime"] + parties_vote_direction_fields
 
     df = data_initiatives_votes[columns].rename({
         "iniciativa_evento_data": "iniciativa_data",
