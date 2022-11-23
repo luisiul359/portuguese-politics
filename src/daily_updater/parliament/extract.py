@@ -381,7 +381,7 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
   """
 
   # we only need this initiative information regaring votes
-  columns_to_keep = ["iniciativa_id","iniciativa_nr","iniciativa_tipo","iniciativa_titulo","iniciativa_evento_fase","iniciativa_evento_data","iniciativa_url","iniciativa_obs","iniciativa_texto_subst","iniciativa_autor_grupos_parlamentares","iniciativa_autor_outros_nome","iniciativa_autor_outros_autor_comissao","iniciativa_autor_deputados_nomes","iniciativa_autor_deputados_GPs","iniciativa_votacao_res","iniciativa_votacao_desc", "iniciativa_autor"]
+  columns_to_keep = ["iniciativa_id","iniciativa_nr","iniciativa_tipo","iniciativa_titulo","iniciativa_evento_fase","iniciativa_evento_data","iniciativa_url","iniciativa_obs","iniciativa_texto_subst","iniciativa_autor_grupos_parlamentares","iniciativa_autor_outros_nome","iniciativa_autor_outros_autor_comissao","iniciativa_autor_deputados_nomes","iniciativa_autor_deputados_GPs","iniciativa_votacao_res","iniciativa_votacao_desc", "iniciativa_autor", "iniciativa_votacao_unanime"]
 
   data_initiatives = pd.DataFrame()
   for _, row in tqdm(initiatives.iterrows(), "getting_initiatives_votes", len(initiatives), file=sys.stdout):
