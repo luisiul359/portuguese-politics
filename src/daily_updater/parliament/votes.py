@@ -109,8 +109,14 @@ def get_initiatives(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     
     # get needed fields' name
     parties_vote_direction_fields = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]
-    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra".split()
+    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra iniciativa_votacao_unanime".split()
     parties_vote_direction_fields = list(set(parties_vote_direction_fields) - set(to_exclude))
+
+    # when the vote was unanimous, individual party vote direction is empty
+    # with this code we fix it
+    unanime_rows = data_initiatives_votes["iniciativa_votacao_unanime"] == "unanime"
+    new_values = data_initiatives_votes.loc[unanime_rows, parties_vote_direction_fields].applymap(lambda x: "afavor" if pd.isna(x) else x)  # move all NaN values to "afavor"
+    data_initiatives_votes.loc[unanime_rows, parties_vote_direction_fields] = new_values
 
     columns = ["iniciativa_evento_fase", "iniciativa_titulo", "iniciativa_url", "iniciativa_autor", "iniciativa_autor_deputados_nomes", "iniciativa_evento_data", "iniciativa_tipo", "iniciativa_votacao_res"] + parties_vote_direction_fields
 
