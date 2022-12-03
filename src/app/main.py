@@ -88,7 +88,7 @@ blob_storage_container_client = get_blob_container()
 
 
 # Get Cosmos DB client
-database = get_database_client()
+#database = get_database_client()
 
 
 #Create FastAPI client
