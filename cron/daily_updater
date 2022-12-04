@@ -7,4 +7,4 @@
 # |  |  |  |  |
 # *  *  *  *  * user-name  command to be executed
 
-15 10 * * * /usr/bin/env $(cat /code/.env | xargs) /usr/local/bin/python /code/src/daily_updater/main.py 
+17 15 * * * /usr/bin/env $(cat /code/.env | xargs) /usr/local/bin/python /code/src/daily_updater/main.py 
