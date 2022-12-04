@@ -15,7 +15,7 @@ def get_party_approvals(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     
     # get all party votes fields
     parties_vote_direction_fields = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]
-    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra".split()
+    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra iniciativa_votacao_unanime".split()
     parties_vote_direction_fields = list(set(parties_vote_direction_fields) - set(to_exclude))
 
     def calculate_vote_distribution(group: pd.DataFrame, parties_vote_direction_fields: List[str]) -> pd.Series:
@@ -45,7 +45,7 @@ def get_party_correlations(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame
 
     # get all party votes fields
     parties_columns = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]
-    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra".split()
+    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra iniciativa_votacao_unanime".split()
     parties_columns = list(set(parties_columns) - set(to_exclude))
 
     res = defaultdict(list)
@@ -83,7 +83,7 @@ def collect_parties_strange_votes(data_initiatives_votes: pd.DataFrame) -> pd.Da
     """
 
     parties_columns = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]
-    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra".split()
+    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra iniciativa_votacao_unanime".split()
     parties_columns = list(set(parties_columns) - set(to_exclude))
 
     data = []

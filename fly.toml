@@ -7,6 +7,10 @@ processes = []
 
 [env]
 
+[processes]
+  app = ""
+  cron = "cron -f"
+
 [deploy]
   strategy = "canary"
 

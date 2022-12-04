@@ -4,7 +4,7 @@ import os
 import sys
 import uuid
 
-from apscheduler.schedulers.blocking import BlockingScheduler
+#from apscheduler.schedulers.blocking import BlockingScheduler
 
 from azure.cosmos import (
     CosmosClient,
@@ -17,14 +17,14 @@ from azure.storage.blob import BlobServiceClient, BlobClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
-from src.daily_updater.parliament.extract import (
+from daily_updater.parliament.extract import (
     ALL_PATHS,
     get_raw_data_from_blob,
     get_initiatives,
     get_initiatives_votes
 )
 
-from src.daily_updater.parliament.votes import (
+from daily_updater.parliament.votes import (
     get_party_approvals,
     get_party_correlations
 )
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
 
-sched = BlockingScheduler()
+#sched = BlockingScheduler()
 
 
 def get_or_create_database() -> DatabaseProxy:
@@ -131,7 +131,7 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
-@sched.scheduled_job("cron", hour="3", minute="00")
+#@sched.scheduled_job("cron", hour="3", minute="00")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
@@ -219,4 +219,7 @@ def main() -> None:
     logger.info("Done.")
 
 
-sched.start()
+if __name__ == "__main__":
+    main()
+
+#sched.start()

@@ -107,7 +107,7 @@
 
 # Environments
 # .env
-**/.env
+#**/.env
 **/.venv
 **/env
 **/venv
@@ -115,7 +115,6 @@
 **/env.bak
 **/venv.bak
 **/pythonenv*
-**/.env
 
 # Spyder project settings
 **/.spyderproject

@@ -30,9 +30,11 @@ RUN groupadd -g "${GID}" -r user \
 
 COPY --chown=user:user ./src/ /code/src/
 
-COPY --chown=user:user ./poetry.lock ./pyproject.toml /code/
+COPY --chown=user:user ./poetry.lock ./pyproject.toml ./.env /code/
 
 RUN poetry install --only main --no-interaction --no-ansi
+
+COPY ./cron/daily_updater /etc/cron.d/
 
 USER user
 
