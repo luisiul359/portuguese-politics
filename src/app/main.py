@@ -7,7 +7,7 @@ import logging
 from typing import Optional
 from fastapi import FastAPI
 from datetime import date
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
 from azure.cosmos import (
     CosmosClient,
@@ -21,7 +21,7 @@ from src.daily_updater.parliament import votes
 from src.app.apis import schemas
 
 
-load_dotenv(dotenv_path=".env")
+#load_dotenv(dotenv_path=".env")
 
 
 logger = logging.getLogger(__name__)

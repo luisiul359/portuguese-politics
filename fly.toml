@@ -3,13 +3,7 @@
 app = "portuguese-politics"
 kill_signal = "SIGINT"
 kill_timeout = 5
-processes = []
-
-[env]
-
-[processes]
-  app = ""
-  cron = "cron -f"
+#processes = []
 
 [deploy]
   strategy = "canary"

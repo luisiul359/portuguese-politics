@@ -18,7 +18,7 @@ from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
 from daily_updater.parliament.extract import (
-    ALL_PATHS,
+    ONGOING_PATHS,
     get_raw_data_from_blob,
     get_initiatives,
     get_initiatives_votes
@@ -150,7 +150,7 @@ def main() -> None:
     ##recreate_all_cosmos_containers(database)
 
     # Go through each supported legislature and populate the database
-    for legislature_name, _ in tqdm(ALL_PATHS, "processing_legislatures", file=sys.stdout):
+    for legislature_name, _ in tqdm(ONGOING_PATHS, "processing_legislatures", file=sys.stdout):
 
         # load raw data (json format) from Blob Sotrage (cache from parlamento API)
         raw_initiatives = get_raw_data_from_blob(blob_storage_container_client, legislature_name)

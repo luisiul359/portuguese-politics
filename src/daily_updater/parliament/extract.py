@@ -40,6 +40,10 @@ ALL_PATHS = [
   ("XV", PATH_XV)
 ]
 
+ONGOING_PATHS = [
+  ("XV", PATH_XV)
+]
+
 
 def get_raw_data_from_blob(blob_container: BlobContainerClient, legislature_name: str) -> List[Dict]:
     """ Load the most recent data provided by Parlamento cached in our Blob Storage """
