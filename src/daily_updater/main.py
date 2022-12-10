@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 import uuid
+import requests
 
 #from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -131,6 +132,19 @@ def get_blob_container() -> BlobContainerClient:
     return container_client
 
 
+def update_app():
+    """
+    Send a request to Portuguese Politics app to refresh data
+    """
+
+    r = requests.get('https://portuguese-politics.fly.dev/update')
+    if r.status_code != 200:
+        logger.error(r.status_code)
+        logger.error(r.content)
+    else:
+        return {'Ok'}
+
+
 #@sched.scheduled_job("cron", hour="3", minute="00")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
@@ -216,6 +230,8 @@ def main() -> None:
         blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}_party_correlations.json")
         blob_client.upload_blob(party_correlations, overwrite=True)
         
+    update_app()
+    
     logger.info("Done.")
 
 

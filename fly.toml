@@ -1,4 +1,3 @@
-# fly.toml file generated for portuguese-politics on 2022-12-03T22:40:57Z
 
 app = "portuguese-politics"
 kill_signal = "SIGINT"

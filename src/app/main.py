@@ -91,15 +91,6 @@ blob_storage_container_client = get_blob_container()
 #database = get_database_client()
 
 
-#Create FastAPI client
-tags_metadata = [
-    {"name": "Parliament", "description": "Information from Portuguese Parliament API."},
-    {"name": "Elections", "description": "Information from Portuguese previous elections."},
-]
-
-app = FastAPI(openapi_tags=tags_metadata)
-
-
 ####################################
 ##### Load things into memory  #####
 ####################################
@@ -138,31 +129,61 @@ def load_initiative_votes(legislature: str, container_client: BlobContainerClien
     return df
 
 
-party_approvals = {
-    legislature: load_party_approvals(legislature, blob_storage_container_client)
-    for legislature in ALL_LEGISLATURES
-}
+party_approvals = None
+party_correlations = None
+initiative_votes = None
+parties_legislativas_2019 = None
+candidates_legislativas_2019 = None
 
 
-party_correlations = {
-    legislature: load_party_correlations(legislature, blob_storage_container_client)
-    for legislature in ALL_LEGISLATURES
-}
+def load_data():
+    """
+    Load all data into memory
+    """
+    # non thread safe, to be fixed when the api usage justify
+    global party_approvals 
+    global party_correlations 
+    global initiative_votes
+    global parties_legislativas_2019
+    global candidates_legislativas_2019 
 
+    # parliament data
+    party_approvals = {
+        legislature: load_party_approvals(legislature, blob_storage_container_client)
+        for legislature in ALL_LEGISLATURES
+    }
 
-initiative_votes = {
-    legislature: load_initiative_votes(legislature, blob_storage_container_client)
-    for legislature in ALL_LEGISLATURES
-}
+    party_correlations = {
+        legislature: load_party_correlations(legislature, blob_storage_container_client)
+        for legislature in ALL_LEGISLATURES
+    }
 
+    initiative_votes = {
+        legislature: load_initiative_votes(legislature, blob_storage_container_client)
+        for legislature in ALL_LEGISLATURES
+    }
 
-# load legislativas data into memory
-parties_legislativas_2019, candidates_legislativas_2019 = extract_legislativas_2019()
+    # legislativas data
+    parties_legislativas_2019, candidates_legislativas_2019 = extract_legislativas_2019()
 
 
 ######################
 ##### Endpoints  #####
 ######################
+
+
+#Create FastAPI client
+tags_metadata = [
+    {"name": "Parliament", "description": "Information from Portuguese Parliament API."},
+    {"name": "Elections", "description": "Information from Portuguese previous elections."},
+]
+
+app = FastAPI(openapi_tags=tags_metadata)
+
+
+@app.on_event("startup")
+async def startup_event():
+    load_data()
 
 
 @app.get("/parliament/party-approvals", response_model=schemas.PartyApprovalsOut, tags=["Parliament"])
@@ -293,3 +314,8 @@ def get_district_candidates(district: str, type: Optional[str] = "Legislativas",
     candidates_legislativas_2019_ = candidates_legislativas_2019_[candidates_legislativas_2019_["district"] == district]
 
     return {'candidates': json.loads(candidates_legislativas_2019_.to_json(orient="records"))}
+
+
+@app.get("/update")
+def update():
+    load_data()

@@ -1,4 +1,3 @@
-# fly.toml file generated for daily-updater on 2022-12-04T17:40:33Z
 
 app = "daily-updater"
 kill_signal = "SIGINT"
