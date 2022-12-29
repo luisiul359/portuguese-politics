@@ -5,7 +5,7 @@ import sys
 import uuid
 import requests
 
-#from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 from azure.cosmos import (
     CosmosClient,
@@ -35,7 +35,8 @@ logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
 
-#sched = BlockingScheduler()
+
+sched = BlockingScheduler()
 
 
 def get_or_create_database() -> DatabaseProxy:
@@ -137,7 +138,8 @@ def update_app():
     Send a request to Portuguese Politics app to refresh data
     """
 
-    r = requests.get('https://portuguese-politics.fly.dev/update')
+    #r = requests.get('https://portuguese-politics.fly.dev/update')
+    r = requests.get('https://portuguese-politics.herokuapp.com/update')
     if r.status_code != 200:
         logger.error(r.status_code)
         logger.error(r.content)
@@ -145,7 +147,7 @@ def update_app():
         return {'Ok'}
 
 
-#@sched.scheduled_job("cron", hour="3", minute="00")
+@sched.scheduled_job("cron", hour="3", minute="00")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
@@ -238,4 +240,4 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
-#sched.start()
+sched.start()

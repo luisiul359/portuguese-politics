@@ -318,4 +318,6 @@ def get_district_candidates(district: str, type: Optional[str] = "Legislativas",
 
 @app.get("/update")
 def update():
+    logger.info("Loading new data..")
     load_data()
+    logger.info("New data loaded.")
