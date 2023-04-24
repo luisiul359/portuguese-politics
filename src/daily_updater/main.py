@@ -147,7 +147,7 @@ def update_app():
         return {'Ok'}
 
 
-@sched.scheduled_job("cron", hour="3", minute="00")
+@sched.scheduled_job("cron", hour="20", minute="28")
 def main() -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
         tzinfo=datetime.timezone.utc).isoformat()
