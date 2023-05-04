@@ -53,13 +53,18 @@ def get_party_correlations(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame
         for party_b in parties_columns:
             pa = data_initiatives_votes.loc[~data_initiatives_votes[party_a].isin(["ausência", ""]), party_a]
             pb = data_initiatives_votes.loc[~data_initiatives_votes[party_b].isin(["ausência", ""]), party_b]
-            corr = pd.crosstab(pa, pb, margins=True)
-            diag = np.diag(corr)
-            
-            total = diag[-1]
-            total_corr = diag[:-1].sum()
+            # indexes that we should consider
+            indexes = pa.dropna().index.intersection(pb.dropna().index)
+            if len(indexes) == 0:
+                res[party_a].append(0)
+            else:
+                corr = pd.crosstab(pa[indexes], pb[indexes], margins=True)
+                diag = np.diag(corr)
+                
+                total = diag[-1]
+                total_corr = diag[:-1].sum()
 
-            res[party_a].append(total_corr / total)
+                res[party_a].append(total_corr / total)
 
     return pd.DataFrame(res, index=parties_columns).reset_index().rename(columns = {'index':'nome'})
 

@@ -19,7 +19,7 @@ from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
 from src.daily_updater.parliament.extract import (
-    ONGOING_PATHS,
+    ONGOING_PATHS as PATHS,
     get_raw_data_from_blob,
     get_initiatives,
     get_initiatives_votes
@@ -29,6 +29,8 @@ from src.daily_updater.parliament.votes import (
     get_party_approvals,
     get_party_correlations
 )
+
+from src.app.apis.schemas import EventPhase
 
 
 logger = logging.getLogger(__name__)
@@ -166,16 +168,23 @@ def main() -> None:
     ##recreate_all_cosmos_containers(database)
 
     # Go through each supported legislature and populate the database
-    for legislature_name, _ in tqdm(ONGOING_PATHS, "processing_legislatures", file=sys.stdout):
+    for legislature_name, _ in tqdm(PATHS, "processing_legislatures", file=sys.stdout):
 
         # load raw data (json format) from Blob Sotrage (cache from parlamento API)
         raw_initiatives = get_raw_data_from_blob(blob_storage_container_client, legislature_name)
         # collect all initiatives, still very raw info
         df_initiatives = get_initiatives(raw_initiatives)
+
+        # fix an error
+        df_initiatives.loc[(df_initiatives["iniciativa_id"] == "151936") & (df_initiatives["iniciativa_votacao_res"] == "Rejeitado"), "iniciativa_votacao_res"] = "Aprovado"
+
         # free up memory
         del raw_initiatives
         # collect vote information from all initiatives
         df_initiatives_votes = get_initiatives_votes(df_initiatives)
+
+        # we do not need those initiatives, they were dropped
+        df_initiatives_votes = df_initiatives_votes[df_initiatives_votes["iniciativa_votacao_res"] != "Retirado"]
 
         # store initiative votes in Blob Storage, already processed
         initiatives_votes = df_initiatives_votes.to_json(orient="index")
@@ -221,16 +230,22 @@ def main() -> None:
             """
         # Azure Cosmos DB free tier only support 2 containers, thus
         # we will store the remaining info in Azure Blob Storage
-        party_approvals = get_party_approvals(df_initiatives_votes).to_json(orient="index")
-        party_correlations = get_party_correlations(df_initiatives_votes).to_json(orient="index")
+        for phase in EventPhase:
+            if phase != EventPhase.ALL:
+                df_initiatives_votes_ = df_initiatives_votes[df_initiatives_votes["iniciativa_evento_fase"] == phase]
+            else:
+                df_initiatives_votes_ = df_initiatives_votes
 
-        # party_approvals
-        blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}_party_approvals.json")
-        blob_client.upload_blob(party_approvals, overwrite=True)
+            party_approvals = get_party_approvals(df_initiatives_votes_).to_json(orient="index")
+            party_correlations = get_party_correlations(df_initiatives_votes_).to_json(orient="index")
+            
+            # party_approvals
+            blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}_party_approvals_{phase.name.lower()}.json")
+            blob_client.upload_blob(party_approvals, overwrite=True)
 
-        # party_correlations
-        blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}_party_correlations.json")
-        blob_client.upload_blob(party_correlations, overwrite=True)
+            # party_correlations
+            blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}_party_correlations_{phase.name.lower()}.json")
+            blob_client.upload_blob(party_correlations, overwrite=True)
         
     update_app()
     

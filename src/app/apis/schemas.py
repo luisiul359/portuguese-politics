@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List, Dict
 from pydantic import BaseModel
 
@@ -21,3 +22,10 @@ class PartyCorrelations(BaseModel):
 
 class PartyCorrelationsOut(BaseModel):
     partido: List[PartyCorrelations]
+
+
+class EventPhase(str, Enum):
+    GENERALIDADE = 'Votação na generalidade'
+    ESPECIALIDADE = 'Votação na especialidade'
+    ALL = 'Todos'
+    FINAL = 'Votação final global'

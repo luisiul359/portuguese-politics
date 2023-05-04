@@ -99,21 +99,21 @@ blob_storage_container_client = get_blob_container()
 ALL_LEGISLATURES = ["XIV", "XV"]
 
 
-def load_party_approvals(legislature: str, container_client: BlobContainerClient) -> pd.DataFrame:
+def load_party_approvals(legislature: str, phase: str, container_client: BlobContainerClient) -> pd.DataFrame:
     """
     Load party approvals for a full legislature from Blob Storage
     """
     
-    data = container_client.get_blob_client(f"{legislature}_party_approvals.json")
+    data = container_client.get_blob_client(f"{legislature}_party_approvals_{phase}.json")
     return pd.DataFrame.from_dict(json.loads(data.download_blob().readall()), orient="index")
 
 
-def load_party_correlations(legislature: str, container_client: BlobContainerClient) -> pd.DataFrame:
+def load_party_correlations(legislature: str, phase: str, container_client: BlobContainerClient) -> pd.DataFrame:
     """
     Load party correlations for a full legislature from Blob Storage
     """
     
-    data = container_client.get_blob_client(f"{legislature}_party_correlations.json")
+    data = container_client.get_blob_client(f"{legislature}_party_correlations_{phase}.json")
     return pd.DataFrame.from_dict(json.loads(data.download_blob().readall()), orient="index")
 
 
@@ -149,13 +149,17 @@ def load_data():
 
     # parliament data
     party_approvals = {
-        legislature: load_party_approvals(legislature, blob_storage_container_client)
-        for legislature in ALL_LEGISLATURES
+        legislature: {
+            phase.value: load_party_approvals(legislature, phase.name.lower(), blob_storage_container_client)
+            for phase in schemas.EventPhase
+        } for legislature in ALL_LEGISLATURES
     }
 
     party_correlations = {
-        legislature: load_party_correlations(legislature, blob_storage_container_client)
-        for legislature in ALL_LEGISLATURES
+        legislature: {
+            phase.value: load_party_correlations(legislature, phase.name.lower(), blob_storage_container_client)
+            for phase in schemas.EventPhase
+        } for legislature in ALL_LEGISLATURES
     }
 
     initiative_votes = {
@@ -187,11 +191,19 @@ async def startup_event():
 
 
 @app.get("/parliament/party-approvals", response_model=schemas.PartyApprovalsOut, tags=["Parliament"])
-def get_party_approvals(legislature: Optional[str] = "XV", type: Optional[str] = None, dt_ini: Optional[date] = None, dt_fin: Optional[date] = None):
+def get_party_approvals(
+    legislature: Optional[str] = "XV",
+    event_phase: schemas.EventPhase = schemas.EventPhase.GENERALIDADE, 
+    type: Optional[str] = None,
+    dt_ini: Optional[date] = None, dt_fin: Optional[date] = None
+):
 
     if dt_ini or dt_fin or type:
         data_initiatives_votes_ = initiative_votes[legislature]
         
+        if event_phase != schemas.EventPhase.ALL:
+            data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_fase"] == event_phase]
+
         if dt_ini:
             data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini]
 
@@ -203,7 +215,7 @@ def get_party_approvals(legislature: Optional[str] = "XV", type: Optional[str] =
         
         _party_approvals = votes.get_party_approvals(data_initiatives_votes_).to_json(orient="index")
     else:
-        _party_approvals = party_approvals[legislature].to_json(orient="index")
+        _party_approvals = party_approvals[legislature][event_phase.value].to_json(orient="index")
     
     # transform to the expected schema
     approvals = []
@@ -224,11 +236,20 @@ def get_party_approvals(legislature: Optional[str] = "XV", type: Optional[str] =
 
 
 @app.get("/parliament/party-correlations", response_model=schemas.PartyCorrelationsOut, tags=["Parliament"])
-def get_party_correlations(legislature: Optional[str] = "XV", type: Optional[str] = None, dt_ini: Optional[date] = None, dt_fin: Optional[date] = None):
+def get_party_correlations(
+    legislature: Optional[str] = "XV",
+    event_phase: schemas.EventPhase = schemas.EventPhase.GENERALIDADE, 
+    type: Optional[str] = None,
+    dt_ini: Optional[date] = None,
+    dt_fin: Optional[date] = None
+):
     
     if dt_ini or dt_fin or type:
         data_initiatives_votes_ = initiative_votes[legislature]
         
+        if event_phase != schemas.EventPhase.ALL:
+            data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_fase"] == event_phase]
+
         if dt_ini:
             data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini]
 
@@ -240,7 +261,7 @@ def get_party_correlations(legislature: Optional[str] = "XV", type: Optional[str
 
         _party_corr = votes.get_party_correlations(data_initiatives_votes_).to_json(orient="index")
     else:
-        _party_corr = party_correlations[legislature].to_json(orient="index")
+        _party_corr = party_correlations[legislature][event_phase.value].to_json(orient="index")
 
     # transform to the expected schema
     res = []
@@ -254,9 +275,22 @@ def get_party_correlations(legislature: Optional[str] = "XV", type: Optional[str
 
 
 @app.get("/parliament/initiatives", tags=["Parliament"])
-def get_initiatives(legislature: Optional[str] = "XV", name_filter: Optional[str] = None, party: Optional[str] = None, deputy: Optional[str] = None,  dt_ini: Optional[date] = None, dt_fin: Optional[date] = None, limit: Optional[int] = 20, offset: Optional[int] = 0):
+def get_initiatives(
+    legislature: Optional[str] = "XV",
+    event_phase: schemas.EventPhase = schemas.EventPhase.GENERALIDADE, 
+    name_filter: Optional[str] = None,
+    party: Optional[str] = None,
+    deputy: Optional[str] = None,
+    dt_ini: Optional[date] = None,
+    dt_fin: Optional[date] = None,
+    limit: Optional[int] = 20,
+    offset: Optional[int] = 0
+):
     
     data_initiatives_votes_ = initiative_votes[legislature]
+
+    if event_phase != schemas.EventPhase.ALL:
+        data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_fase"] == event_phase]
     
     if dt_ini:
         data_initiatives_votes_ = data_initiatives_votes_[data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini]
