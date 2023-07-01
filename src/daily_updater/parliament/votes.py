@@ -129,7 +129,10 @@ def get_initiatives(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     new_values = data_initiatives_votes.loc[unanime_rows, parties_vote_direction_fields].applymap(lambda x: "afavor" if pd.isna(x) else x)  # move all NaN values to "afavor"
     data_initiatives_votes.loc[unanime_rows, parties_vote_direction_fields] = new_values
 
-    columns = ["iniciativa_evento_fase", "iniciativa_titulo", "iniciativa_url", "iniciativa_autor", "iniciativa_autor_deputados_nomes", "iniciativa_evento_data", "iniciativa_tipo", "iniciativa_votacao_res"] + parties_vote_direction_fields
+    # add addtional column
+    data_initiatives_votes["iniciativa_url_res"] = "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=" + data_initiatives_votes["iniciativa_id"]
+
+    columns = ["iniciativa_evento_fase", "iniciativa_titulo", "iniciativa_url", "iniciativa_url_res", "iniciativa_autor", "iniciativa_autor_deputados_nomes", "iniciativa_evento_data", "iniciativa_tipo", "iniciativa_votacao_res"] + parties_vote_direction_fields
 
     df = data_initiatives_votes[columns].rename({
         "iniciativa_evento_data": "iniciativa_data",
