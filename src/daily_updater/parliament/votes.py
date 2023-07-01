@@ -18,6 +18,12 @@ def get_party_approvals(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra iniciativa_votacao_unanime".split()
     parties_vote_direction_fields = list(set(parties_vote_direction_fields) - set(to_exclude))
 
+    # when the vote was unanimous, individual party vote direction is empty
+    # with this code we fix it
+    unanime_rows = data_initiatives_votes["iniciativa_votacao_unanime"] == "unanime"
+    new_values = data_initiatives_votes.loc[unanime_rows, parties_vote_direction_fields].applymap(lambda x: "afavor" if pd.isna(x) else x)  # move all NaN values to "afavor"
+    data_initiatives_votes.loc[unanime_rows, parties_vote_direction_fields] = new_values
+
     def calculate_vote_distribution(group: pd.DataFrame, parties_vote_direction_fields: List[str]) -> pd.Series:
         values = [
             group["iniciativa_aprovada"].count(),

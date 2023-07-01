@@ -321,10 +321,10 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
       # for now will keep the first one
       if isinstance(votacao, List):
         votacao = votacao[0]
-      info_to_store_details["iniciativa_comissao_votacao_Res"] = votacao.get("resultado", "")
-      info_to_store_details["iniciativa_comissao_votacao_Desc"] = votacao.get("descricao", "")
-      info_to_store_details["iniciativa_comissao_votacao_Data"] = votacao.get("data", "")
-      info_to_store_details["iniciativa_comissao_votacao_Unanime"] = votacao.get("unanime", "")
+      info_to_store_details["iniciativa_comissao_votacao_res"] = votacao.get("resultado", "")
+      info_to_store_details["iniciativa_comissao_votacao_desc"] = votacao.get("descricao", "")
+      info_to_store_details["iniciativa_comissao_votacao_data"] = votacao.get("data", "")
+      info_to_store_details["iniciativa_comissao_votacao_unanime"] = votacao.get("unanime", "")
       
       # TODO: in event: teor, sumario, publicacao
       # TODO: in comissao:  audicoes, audiencias, distribuicaoSubcomissao, motivoNaoParecer, pareceresRecebidos, pedidosParecer, relatores
