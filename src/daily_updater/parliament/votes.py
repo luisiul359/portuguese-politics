@@ -13,6 +13,8 @@ def get_party_approvals(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     if len(data_initiatives_votes) == 0:
         return pd.DataFrame()
     
+    data_initiatives_votes = data_initiatives_votes.copy()
+    
     # get all party votes fields
     parties_vote_direction_fields = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]
     to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra iniciativa_votacao_unanime".split()
@@ -117,6 +119,8 @@ def get_initiatives(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     """
     Get all initiatives, removing not needed fields
     """
+
+    data_initiatives_votes = data_initiatives_votes.copy()
     
     # get needed fields' name
     parties_vote_direction_fields = [x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")]
