@@ -573,7 +573,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
     return data_initiatives
 
 
-# Improve: in some of the following situations I could maybe infer the vote
+# Improve: in some of the following situations maybe I could infer the vote
 #          of some parties
 # https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=44422
 # https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=44343

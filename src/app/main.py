@@ -471,6 +471,11 @@ def get_district_candidates(
 
 @app.get("/update")
 def update():
+    """
+    Forces to reload the parliament data from our internal storage.
+
+    This is called by our daily updater.
+    """
     logger.info("Loading new data..")
     load_data()
     logger.info("New data loaded.")

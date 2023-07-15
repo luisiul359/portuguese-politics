@@ -7,8 +7,8 @@ packages = [ ]
 
 [tool.poetry.dependencies]
 python = "~3.9"
-requests = "~2.25.1"
-azure-functions = "^1.1.12"
+requests = "~2.31"
+azure-functions = "~1.15"
 
 [tool.poetry.dev-dependencies]
 
