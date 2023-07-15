@@ -28,6 +28,10 @@ python-dotenv = "^0.20.0"
 pytest = "^6.2.4"
 pytest-cov = "^2.12.1"
 
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+isort = "^5.12.0"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

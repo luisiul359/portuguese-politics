@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-.PHONY = setup init run test clean
+.PHONY = setup init run test clean format_code
 
 # Defines the default target that `make` will try to make, or in the case of a phony target, execute the specified commands
 # This target is executed whenever we just type `make`
@@ -27,6 +27,10 @@ test:
 
 clean:
 	rm -r .venv 
+
+format_code:
+	black .
+	isort .
 
 deploy-daily-updater:
 	fly deploy . --app daily-updater --config daily_updater/fly.toml --dockerfile daily_updater/Dockerfile

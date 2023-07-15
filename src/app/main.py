@@ -3,17 +3,13 @@ import logging
 import os
 import sys
 from datetime import date
-from typing import Optional
+from typing import Dict, Optional
 
 import pandas as pd
 import uvicorn as uvicorn
-from azure.cosmos import (
-    CosmosClient,
-    DatabaseProxy,
-)
+from azure.cosmos import CosmosClient, DatabaseProxy
 from azure.storage.blob import BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
-
 # from dotenv import load_dotenv
 from fastapi import FastAPI
 
@@ -131,6 +127,18 @@ def load_party_correlations(
     )
 
 
+def load_legislatures_fields(
+    legislature: str, container_client: BlobContainerClient
+) -> Dict:
+    """
+    Load initiative votes of a certain legislature from Blob Storage
+    """
+
+    data = container_client.get_blob_client(f"{legislature}_legislatures.json")
+
+    return json.loads(data.download_blob().readall())
+
+
 def load_initiative_votes(
     legislature: str, container_client: BlobContainerClient
 ) -> pd.DataFrame:
@@ -166,6 +174,7 @@ def load_data():
     global initiative_votes
     global parties_legislativas_2019
     global candidates_legislativas_2019
+    global legislature_fields
 
     # parliament data
     party_approvals = {
@@ -175,6 +184,13 @@ def load_data():
             )
             for phase in schemas.EventPhase
         }
+        for legislature in ALL_LEGISLATURES
+    }
+
+    legislature_fields = {
+        legislature: load_legislatures_fields(
+            legislature=legislature, container_client=blob_storage_container_client
+        )
         for legislature in ALL_LEGISLATURES
     }
 
@@ -348,6 +364,13 @@ def get_party_correlations(
         )
 
     return {"partido": res}
+
+
+@app.get("/parliament/legislatures", tags=["Parliament"])
+def get_legislatures(
+    legislature: Optional[str] = "XV",
+):
+    return legislature_fields[legislature]
 
 
 @app.get("/parliament/initiatives", tags=["Parliament"])
