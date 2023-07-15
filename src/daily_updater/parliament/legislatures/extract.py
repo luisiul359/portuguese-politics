@@ -26,7 +26,7 @@ class LegislatureMember:
         return {"nome": self.name, "dep_id": self.id}
 
 
-def _get_raw_data(path: str) -> List[Dict]:
+def _get_raw_data(path: str) -> Dict:
     """Load the most recent data provided by Parlamento"""
 
     try:
@@ -122,7 +122,6 @@ def get_legislatures_fields(path: str) -> Dict:
     data = _get_raw_data(path=path)
     chair_of_general_assembly = _get_chair_of_general_assembly(data)
     party_deputy_chair = _get_party_deputy_chair(data)
-    print(party_deputy_chair)
     party_counters = _get_party_deputy_counter(data)
     total_number_of_deputies = sum(party_counters.values())
     return {
