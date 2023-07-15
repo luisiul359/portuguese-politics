@@ -5,28 +5,23 @@ import sys
 
 import requests
 from apscheduler.schedulers.blocking import BlockingScheduler
-from azure.cosmos import (
-    CosmosClient,
-    PartitionKey,
-    DatabaseProxy,
-    ContainerProxy
-)
+from azure.cosmos import CosmosClient, PartitionKey, DatabaseProxy, ContainerProxy
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from azure.storage.blob import BlobServiceClient, BlobClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
-from src.app.apis.schemas import EventPhase
-from src.daily_updater.parliament.extract import (
+from daily_updater.parliament.initiatives.extract import (
     ONGOING_PATHS as PATHS,
     get_raw_data_from_blob,
     get_initiatives,
-    get_initiatives_votes
+    get_initiatives_votes,
 )
-from src.daily_updater.parliament.votes import (
+from daily_updater.parliament.initiatives.votes import (
     get_party_approvals,
-    get_party_correlations
+    get_party_correlations,
 )
+from src.app.apis.schemas import EventPhase
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
@@ -94,7 +89,7 @@ def recreate_all_cosmos_containers(database: DatabaseProxy) -> None:
 
 def get_cosmos_container(database: CosmosClient, container_name: str) -> ContainerProxy:
     """
-    Connects to a certain Azure Cosmos DB container and return its clients. 
+    Connects to a certain Azure Cosmos DB container and return its clients.
     """
 
     try:
@@ -120,10 +115,14 @@ def get_blob_container() -> BlobContainerClient:
         raise
 
     try:
-        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        blob_service_client = BlobServiceClient.from_connection_string(
+            connection_string
+        )
         container_client = blob_service_client.get_container_client(container_name)
     except Exception:
-        logger.exception(f"Error connecting to blob storage container {container_name}:")
+        logger.exception(
+            f"Error connecting to blob storage container {container_name}:"
+        )
         raise
 
     return container_client
@@ -135,18 +134,19 @@ def update_app():
     """
 
     # r = requests.get('https://portuguese-politics.fly.dev/update')
-    r = requests.get('https://portuguese-politics.herokuapp.com/update')
+    r = requests.get("https://portuguese-politics.herokuapp.com/update")
     if r.status_code != 200:
         logger.error(r.status_code)
         logger.error(r.content)
     else:
-        return {'Ok'}
+        return {"Ok"}
 
 
 @sched.scheduled_job("cron", hour="3", minute="00")
 def main() -> None:
-    utc_timestamp = datetime.datetime.utcnow().replace(
-        tzinfo=datetime.timezone.utc).isoformat()
+    utc_timestamp = (
+        datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
+    )
 
     logger.info("Portuguese Politics daily updater ran at %s", utc_timestamp)
 
@@ -163,15 +163,19 @@ def main() -> None:
 
     # Go through each supported legislature and populate the database
     for legislature_name, _ in tqdm(PATHS, "processing_legislatures", file=sys.stdout):
-
         # load raw data (json format) from Blob Sotrage (cache from parlamento API)
-        raw_initiatives = get_raw_data_from_blob(blob_storage_container_client, legislature_name)
+        raw_initiatives = get_raw_data_from_blob(
+            blob_storage_container_client, legislature_name
+        )
         # collect all initiatives, still very raw info
         df_initiatives = get_initiatives(raw_initiatives)
 
         # fix an error
-        df_initiatives.loc[(df_initiatives["iniciativa_id"] == "151936") & (
-                    df_initiatives["iniciativa_votacao_res"] == "Rejeitado"), "iniciativa_votacao_res"] = "Aprovado"
+        df_initiatives.loc[
+            (df_initiatives["iniciativa_id"] == "151936")
+            & (df_initiatives["iniciativa_votacao_res"] == "Rejeitado"),
+            "iniciativa_votacao_res",
+        ] = "Aprovado"
 
         # free up memory
         del raw_initiatives
@@ -179,23 +183,27 @@ def main() -> None:
         df_initiatives_votes = get_initiatives_votes(df_initiatives)
 
         # we do not need those initiatives, they were dropped
-        df_initiatives_votes = df_initiatives_votes[df_initiatives_votes["iniciativa_votacao_res"] != "Retirado"]
+        df_initiatives_votes = df_initiatives_votes[
+            df_initiatives_votes["iniciativa_votacao_res"] != "Retirado"
+        ]
 
         # store initiative votes in Blob Storage, already processed
         initiatives_votes = df_initiatives_votes.to_json(orient="index")
         blob_client: BlobClient = blob_storage_container_client.get_blob_client(
-            f"{legislature_name}_initiatives_votes.json")
+            f"{legislature_name}_initiatives_votes.json"
+        )
         blob_client.upload_blob(initiatives_votes, overwrite=True)
 
         # get containers' clients
         initiatives_container = get_cosmos_container(database, "initiatives")
-        initiatives_votes_container = get_cosmos_container(database, "initiatives_votes")
+        initiatives_votes_container = get_cosmos_container(
+            database, "initiatives_votes"
+        )
 
         for container, initiatives, name in [
             (initiatives_container, df_initiatives, "initiatives"),
-            (initiatives_votes_container, df_initiatives_votes, "initiatives_votes")
+            (initiatives_votes_container, df_initiatives_votes, "initiatives_votes"),
         ]:
-
             logger.info(f"Processing {name}..")
 
             # it seems bulk insert are not supported in Python SDK
@@ -228,21 +236,29 @@ def main() -> None:
         # we will store the remaining info in Azure Blob Storage
         for phase in EventPhase:
             if phase != EventPhase.ALL:
-                df_initiatives_votes_ = df_initiatives_votes[df_initiatives_votes["iniciativa_evento_fase"] == phase]
+                df_initiatives_votes_ = df_initiatives_votes[
+                    df_initiatives_votes["iniciativa_evento_fase"] == phase
+                ]
             else:
                 df_initiatives_votes_ = df_initiatives_votes
 
-            party_approvals = get_party_approvals(df_initiatives_votes_).to_json(orient="index")
-            party_correlations = get_party_correlations(df_initiatives_votes_).to_json(orient="index")
+            party_approvals = get_party_approvals(df_initiatives_votes_).to_json(
+                orient="index"
+            )
+            party_correlations = get_party_correlations(df_initiatives_votes_).to_json(
+                orient="index"
+            )
 
             # party_approvals
             blob_client: BlobClient = blob_storage_container_client.get_blob_client(
-                f"{legislature_name}_party_approvals_{phase.name.lower()}.json")
+                f"{legislature_name}_party_approvals_{phase.name.lower()}.json"
+            )
             blob_client.upload_blob(party_approvals, overwrite=True)
 
             # party_correlations
             blob_client: BlobClient = blob_storage_container_client.get_blob_client(
-                f"{legislature_name}_party_correlations_{phase.name.lower()}.json")
+                f"{legislature_name}_party_correlations_{phase.name.lower()}.json"
+            )
             blob_client.upload_blob(party_correlations, overwrite=True)
 
     update_app()
