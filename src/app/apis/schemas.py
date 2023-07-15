@@ -26,7 +26,7 @@ class PartyCorrelationsOut(BaseModel):
 
 
 class EventPhase(str, Enum):
-    GENERALIDADE = 'Votação na generalidade'
-    ESPECIALIDADE = 'Votação na especialidade'
-    ALL = 'Todos'
-    FINAL = 'Votação final global'
+    GENERALIDADE = "Votação na generalidade"
+    ESPECIALIDADE = "Votação na especialidade"
+    ALL = "Todos"
+    FINAL = "Votação final global"
