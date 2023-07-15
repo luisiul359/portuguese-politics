@@ -13,14 +13,14 @@ from azure.cosmos import (
 )
 from azure.storage.blob import BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from src.app.apis import schemas
 from src.daily_updater.parliament import votes
 from src.elections.extract import extract_legislativas_2019
 
-load_dotenv(dotenv_path=".env")
+# load_dotenv(dotenv_path=".env")
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
