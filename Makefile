@@ -28,8 +28,8 @@ test:
 clean:
 	rm -r .venv 
 
-deploy-daily-updater
+deploy-daily-updater:
 	fly deploy . --app daily-updater --config daily_updater/fly.toml --dockerfile daily_updater/Dockerfile
 
-deploy-portuguese-politics
+deploy-portuguese-politics:
 	fly deploy . --app portuguese-politics

@@ -2,11 +2,9 @@ import datetime
 import logging
 import os
 import sys
-import uuid
+
 import requests
-
 from apscheduler.schedulers.blocking import BlockingScheduler
-
 from azure.cosmos import (
     CosmosClient,
     PartitionKey,
@@ -18,25 +16,21 @@ from azure.storage.blob import BlobServiceClient, BlobClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
+from src.app.apis.schemas import EventPhase
 from src.daily_updater.parliament.extract import (
     ONGOING_PATHS as PATHS,
     get_raw_data_from_blob,
     get_initiatives,
     get_initiatives_votes
 )
-
 from src.daily_updater.parliament.votes import (
     get_party_approvals,
     get_party_correlations
 )
 
-from src.app.apis.schemas import EventPhase
-
-
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
-
 
 sched = BlockingScheduler()
 
@@ -63,7 +57,7 @@ def get_or_create_database() -> DatabaseProxy:
     except Exception:
         logger.exception("Unknow error connectiong to database:")
         raise
-    
+
     return database
 
 
@@ -86,7 +80,7 @@ def recreate_all_cosmos_containers(database: DatabaseProxy) -> None:
         except:
             logger.info(f"Failed to delete container {container}.")
             raise
-        
+
         logger.debug(f"Container {container} deleted successfully.")
 
         try:
@@ -108,7 +102,7 @@ def get_cosmos_container(database: CosmosClient, container_name: str) -> Contain
     except Exception:
         logger.exception(f"Error connecting to container {container_name}:")
         raise
-        
+
     return container
 
 
@@ -131,7 +125,7 @@ def get_blob_container() -> BlobContainerClient:
     except Exception:
         logger.exception(f"Error connecting to blob storage container {container_name}:")
         raise
-        
+
     return container_client
 
 
@@ -140,7 +134,7 @@ def update_app():
     Send a request to Portuguese Politics app to refresh data
     """
 
-    #r = requests.get('https://portuguese-politics.fly.dev/update')
+    # r = requests.get('https://portuguese-politics.fly.dev/update')
     r = requests.get('https://portuguese-politics.herokuapp.com/update')
     if r.status_code != 200:
         logger.error(r.status_code)
@@ -176,7 +170,8 @@ def main() -> None:
         df_initiatives = get_initiatives(raw_initiatives)
 
         # fix an error
-        df_initiatives.loc[(df_initiatives["iniciativa_id"] == "151936") & (df_initiatives["iniciativa_votacao_res"] == "Rejeitado"), "iniciativa_votacao_res"] = "Aprovado"
+        df_initiatives.loc[(df_initiatives["iniciativa_id"] == "151936") & (
+                    df_initiatives["iniciativa_votacao_res"] == "Rejeitado"), "iniciativa_votacao_res"] = "Aprovado"
 
         # free up memory
         del raw_initiatives
@@ -188,17 +183,18 @@ def main() -> None:
 
         # store initiative votes in Blob Storage, already processed
         initiatives_votes = df_initiatives_votes.to_json(orient="index")
-        blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}_initiatives_votes.json")
+        blob_client: BlobClient = blob_storage_container_client.get_blob_client(
+            f"{legislature_name}_initiatives_votes.json")
         blob_client.upload_blob(initiatives_votes, overwrite=True)
-        
+
         # get containers' clients
         initiatives_container = get_cosmos_container(database, "initiatives")
         initiatives_votes_container = get_cosmos_container(database, "initiatives_votes")
 
         for container, initiatives, name in [
-            (initiatives_container, df_initiatives,  "initiatives"), 
+            (initiatives_container, df_initiatives, "initiatives"),
             (initiatives_votes_container, df_initiatives_votes, "initiatives_votes")
-            ]:
+        ]:
 
             logger.info(f"Processing {name}..")
 
@@ -207,7 +203,7 @@ def main() -> None:
             # therefore we will insert one by one, which is not an issue since
             # this code runs once per day and there are "only" around 30k pairs
             # of (initiatives, stage) by the end of each legislature (~4 years)
-            
+
             # https://towardsdatascience.com/heres-the-most-efficient-way-to-iterate-through-your-pandas-dataframe-4dad88ac92ee
             #
             # each row is a certain stage of an initiative.
@@ -238,21 +234,23 @@ def main() -> None:
 
             party_approvals = get_party_approvals(df_initiatives_votes_).to_json(orient="index")
             party_correlations = get_party_correlations(df_initiatives_votes_).to_json(orient="index")
-            
+
             # party_approvals
-            blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}_party_approvals_{phase.name.lower()}.json")
+            blob_client: BlobClient = blob_storage_container_client.get_blob_client(
+                f"{legislature_name}_party_approvals_{phase.name.lower()}.json")
             blob_client.upload_blob(party_approvals, overwrite=True)
 
             # party_correlations
-            blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}_party_correlations_{phase.name.lower()}.json")
+            blob_client: BlobClient = blob_storage_container_client.get_blob_client(
+                f"{legislature_name}_party_correlations_{phase.name.lower()}.json")
             blob_client.upload_blob(party_correlations, overwrite=True)
-        
+
     update_app()
-    
+
     logger.info("Done.")
 
 
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #    main()
 
 sched.start()

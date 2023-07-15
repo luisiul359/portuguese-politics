@@ -1,11 +1,9 @@
-import requests
-import pandas as pd
-
 from typing import Dict, List, Union, Tuple
 
+import pandas as pd
+import requests
 
 PATH_LEGISLATIVAS_2019 = "https://raw.githubusercontent.com/Politica-Para-Todos/ppt-archive/master/legislativas/legislativas-2019/data.json"
-
 
 # mapping between party and manifesto inside PPT repo
 PARTY_TO_MANIFESTO_LEGISLATIVAS_2019 = {
@@ -32,15 +30,15 @@ PARTY_TO_MANIFESTO_LEGISLATIVAS_2019 = {
 
 def get_data(path: str) -> Dict:
     """ Load the most recent data provided by PPT """
-    
-    try:
-      payload = requests.get(path)
-      assert payload.status_code == 200
 
-      return payload.json()
+    try:
+        payload = requests.get(path)
+        assert payload.status_code == 200
+
+        return payload.json()
     except Exception as e:
-      print(path)
-      raise e
+        print(path)
+        raise e
 
 
 def extract_legislativas_2019() -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -64,9 +62,8 @@ def extract_legislativas_2019() -> Tuple[pd.DataFrame, pd.DataFrame]:
                 f"https://raw.githubusercontent.com/Politica-Para-Todos/manifestos/master/legislativas/20191006_legislativas/{m}"
                 for m in manifesto
             ]
-        
-        return f"https://raw.githubusercontent.com/Politica-Para-Todos/manifestos/master/legislativas/20191006_legislativas/{manifesto}" if manifesto else ""
 
+        return f"https://raw.githubusercontent.com/Politica-Para-Todos/manifestos/master/legislativas/20191006_legislativas/{manifesto}" if manifesto else ""
 
     parties = []
     candidates = []
