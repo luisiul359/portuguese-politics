@@ -69,7 +69,7 @@ def update_app():
         return {"Ok"}
 
 
-@sched.scheduled_job("cron", hour="20", minute="39")
+@sched.scheduled_job("cron", hour="19", minute="45")
 def main() -> None:
     utc_timestamp = (
         datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
@@ -108,9 +108,6 @@ def main() -> None:
         df_initiatives_votes = df_initiatives_votes[
             df_initiatives_votes["iniciativa_votacao_res"] != "Retirado"
         ]
-
-        for col in df_initiatives_votes.select_dtypes(include="datetime").columns:
-            df_initiatives_votes[col] = df_initiatives_votes[col].apply(lambda x: x.value)
 
         # store initiative votes in Blob Storage, already processed
         initiatives_votes = df_initiatives_votes.to_json(orient="index")
