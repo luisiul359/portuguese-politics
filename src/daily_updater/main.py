@@ -69,7 +69,7 @@ def update_app():
         return {"Ok"}
 
 
-@sched.scheduled_job("cron", hour="3", minute="00")
+@sched.scheduled_job("cron", hour="18", minute="42")
 def main() -> None:
     utc_timestamp = (
         datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
@@ -90,6 +90,13 @@ def main() -> None:
 
         # collect all initiatives, still very raw info
         df_initiatives = get_initiatives(raw_initiatives)
+
+        # fix an error
+        #df_initiatives.loc[
+        #    (df_initiatives["iniciativa_id"] == "151936")
+        #    & (df_initiatives["iniciativa_votacao_res"] == "Rejeitado"),
+        #    "iniciativa_votacao_res",
+        #] = "Aprovado"
 
         # free up memory
         del raw_initiatives
