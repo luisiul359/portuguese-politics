@@ -69,7 +69,7 @@ def update_app():
         return {"Ok"}
 
 
-@sched.scheduled_job("cron", hour="19", minute="45")
+@sched.scheduled_job("cron", hour="3", minute="00")
 def main() -> None:
     utc_timestamp = (
         datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
@@ -91,13 +91,6 @@ def main() -> None:
         # collect all initiatives, still very raw info
         df_initiatives = get_initiatives(raw_initiatives)
 
-        # fix an error
-        #df_initiatives.loc[
-        #    (df_initiatives["iniciativa_id"] == "151936")
-        #    & (df_initiatives["iniciativa_votacao_res"] == "Rejeitado"),
-        #    "iniciativa_votacao_res",
-        #] = "Aprovado"
-
         # free up memory
         del raw_initiatives
 
@@ -115,7 +108,6 @@ def main() -> None:
             f"{legislature_name}_initiatives_votes.json"
         )
         blob_client.upload_blob(initiatives_votes, overwrite=True)
-
 
         # Break the results per initiative phase and 
         # store the info in Azure Blob Storage

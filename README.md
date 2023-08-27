@@ -35,7 +35,7 @@ make runlocal
     * This is necessary because requests from Heroku and other cloud providers are rejected;
     * Runs every day at 8 pm Portugal time.
 2. The daily updater loads the data from our datalake and extracts the needed information, compute some statistics, and store everything in the datalake to later be consumed by the API.
-    * This process takes around 1h;
+    * This process takes around 1h (when processing XIV legislature);
     * Source code executed is `src.daily_updater.parliament.main`.
     * Runs every day at 3 am GMT.
 3. Heroku dynos sleep after 30 min of inactivity, meaning the daily updater won't run if the dyno is sleeping. Thus we have an Azure Function making requests to our API to avoid that.
