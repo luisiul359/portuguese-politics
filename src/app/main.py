@@ -3,19 +3,18 @@ import logging
 import os
 import sys
 from datetime import date
-from typing import Optional
+from typing import Dict, Optional
 
 import pandas as pd
 import uvicorn as uvicorn
 from azure.storage.blob import BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
-
 # from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from src.app.apis import schemas
-from src.parliament import votes
 from src.elections.extract import extract_legislativas_2019
+from src.parliament.initiatives import votes
 
 # load_dotenv(dotenv_path=".env")
 
@@ -116,11 +115,24 @@ def load_initiative_votes(
     return df
 
 
+def load_legislatures_fields(
+    legislature: str, container_client: BlobContainerClient
+) -> Dict:
+    """
+    Load initiative votes of a certain legislature from Blob Storage
+    """
+
+    data = container_client.get_blob_client(f"{legislature}_legislatures.json")
+
+    return json.loads(data.download_blob().readall())
+
+
 party_approvals = None
 party_correlations = None
 initiative_votes = None
 parties_legislatives_2019 = None
 candidates_legislatives_2019 = None
+legislature_fields = None
 
 
 def load_data():
@@ -134,6 +146,7 @@ def load_data():
     global initiative_votes
     global parties_legislatives_2019
     global candidates_legislatives_2019
+    global legislature_fields
 
     # parliament data
     party_approvals = {
@@ -158,6 +171,13 @@ def load_data():
 
     initiative_votes = {
         legislature: load_initiative_votes(legislature, blob_storage_container_client)
+        for legislature in ALL_LEGISLATURES
+    }
+
+    legislature_fields = {
+        legislature: load_legislatures_fields(
+            legislature=legislature, container_client=blob_storage_container_client
+        )
         for legislature in ALL_LEGISLATURES
     }
 
@@ -192,8 +212,8 @@ app = FastAPI(openapi_tags=tags_metadata)
 @app.on_event("startup")
 async def startup_event():
     # The idea is to load all cached data during the app boostrap.
-    # In some endpoints due the parameters it is not possible to just 
-    # filter the cached data and therefore some computation is done, 
+    # In some endpoints due the parameters it is not possible to just
+    # filter the cached data and therefore some computation is done,
     # meaning slower responses.
     load_data()
 
@@ -212,7 +232,7 @@ def get_party_approvals(
     """
     Get the % that each party approves initiatives from other parties.
     """
-    
+
     if dt_ini or dt_fin or type:
         data_initiatives_votes_ = initiative_votes[legislature.value]
 
@@ -240,9 +260,9 @@ def get_party_approvals(
             orient="index"
         )
     else:
-        _party_approvals = party_approvals[legislature.value][event_phase.value].to_json(
-            orient="index"
-        )
+        _party_approvals = party_approvals[legislature.value][
+            event_phase.value
+        ].to_json(orient="index")
 
     # transform to the expected schema
     approvals = []
@@ -282,7 +302,7 @@ def get_party_correlations(
     """
     Get the percentage of times that 2 parties vote the same.
     """
-    
+
     if dt_ini or dt_fin or type:
         data_initiatives_votes_ = initiative_votes[legislature.value]
 
@@ -340,12 +360,12 @@ def get_initiatives(
     dt_fin: Optional[date] = None,
     limit: Optional[int] = 20,
     offset: Optional[int] = 0,
-): # -> schemas.InitiativesOut:  ## TODO: each legislature has different parties, we may need to update the schema
+):  # -> schemas.InitiativesOut:  ## TODO: each legislature has different parties, we may need to update the schema
     """
     Get information regarting initiatives prresented in the Assembly of the
     Portuguese Republic.
     """
-    
+
     data_initiatives_votes_ = initiative_votes[legislature.value]
 
     if event_phase != schemas.EventPhase.ALL:
@@ -398,21 +418,27 @@ def get_initiatives(
     return {"initiativas": res}
 
 
+@app.get("/parliament/legislatures", tags=["Parliament"])
+def get_legislatures(
+    legislature: schemas.Legislature = schemas.Legislature.XV,
+):
+    """
+    Get information regarding a particular legislature
+    """
+    return legislature_fields[legislature.value]
+
+
 @app.get("/elections/parties", tags=["Elections"])
 def get_elections_parties(
     type: Optional[str] = "Legislativas", year: Optional[int] = 2019
-):# -> schemas.PartiesOut: ## TODO: it is not working
+):  # -> schemas.PartiesOut: ## TODO: it is not working
     """
     Get all the parties that participated in a certain election.
     """
 
     # ignoring input parameters until we have other elections
 
-    return {
-        "parties": json.loads(
-            parties_legislatives_2019.to_json(orient="index")
-        )
-    }
+    return {"parties": json.loads(parties_legislatives_2019.to_json(orient="index"))}
 
 
 @app.get("/elections/candidates", tags=["Elections"])
@@ -448,7 +474,7 @@ def get_district_candidates(
     """
     Get all the candidates from party in the constituency of district.
     """
-    
+
     # ignoring some input parameters until we have other elections
 
     candidates_legislatives_2019_ = candidates_legislatives_2019
