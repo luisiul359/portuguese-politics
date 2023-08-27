@@ -9,14 +9,14 @@ from azure.storage.blob import BlobServiceClient, BlobClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
-from src.app.apis.schemas import EventPhase
-from src.parliament.extract import (
+from app.apis.schemas import EventPhase
+from parliament.extract import (
     ONGOING_PATHS as PATHS,
     get_raw_data_from_blob,
     get_initiatives,
     get_initiatives_votes,
 )
-from src.parliament.votes import (
+from parliament.votes import (
     get_party_approvals,
     get_party_correlations,
 )
@@ -69,7 +69,7 @@ def update_app():
         return {"Ok"}
 
 
-@sched.scheduled_job("cron", hour="18", minute="42")
+@sched.scheduled_job("cron", hour="19", minute="26")
 def main() -> None:
     utc_timestamp = (
         datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
@@ -109,6 +109,9 @@ def main() -> None:
             df_initiatives_votes["iniciativa_votacao_res"] != "Retirado"
         ]
 
+        for col in df_initiatives_votes.select_dtypes(include="datetime").columns:
+            df_initiatives_votes[col] = df_initiatives_votes[col].apply(lambda x: x.value)
+
         # store initiative votes in Blob Storage, already processed
         initiatives_votes = df_initiatives_votes.to_json(orient="index")
         blob_client: BlobClient = blob_storage_container_client.get_blob_client(
@@ -116,19 +119,6 @@ def main() -> None:
         )
         blob_client.upload_blob(initiatives_votes, overwrite=True)
 
-        # preprocess the initiatives
-        for initiatives, name in [
-            (df_initiatives, "initiatives"),
-            (df_initiatives_votes, "initiatives_votes"),
-        ]:
-            logger.info(f"Processing {name}..")
-
-            # convert to epoch time to avoid serializable issues
-            for col in initiatives.select_dtypes(include="datetime").columns:
-                initiatives[col] = initiatives[col].apply(lambda x: x.value)
-
-            # convert all nan to "" (all columns with nan are strings)
-            initiatives.fillna("", inplace=True)
 
         # Break the results per initiative phase and 
         # store the info in Azure Blob Storage
@@ -165,7 +155,7 @@ def main() -> None:
     logger.info("Done.")
 
 
-# if __name__ == "__main__":
-#    main()
+#if __name__ == "__main__":
+#   main()
 
 sched.start()
