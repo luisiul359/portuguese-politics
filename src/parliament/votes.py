@@ -46,7 +46,9 @@ def get_party_approvals(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
         res = pd.Series(values, "total_iniciativas total_iniciativas_aprovadas".split())
 
         # add approval distribution per party
-        res = res.append((group[parties_vote_direction_fields] == "afavor").mean())
+        res = pd.concat(
+            [res, (group[parties_vote_direction_fields] == "afavor").mean()]
+        )
 
         return res
 

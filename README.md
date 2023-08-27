@@ -32,7 +32,7 @@ make runlocal
 
 1. There is a cronjob in Luís Silva personal computer that extracts the data from Portuguese Parliament to our datalake.
     * Source code executed is `cronjob.py`;
-    * This is necessary because requests from Heroku and cloud providers are rejected;
+    * This is necessary because requests from Heroku and other cloud providers are rejected;
     * Runs every day at 8 pm Portugal time.
 2. The daily updater loads the data from our datalake and extracts the needed information, compute some statistics, and store everything in the datalake to later be consumed by the API.
     * This process takes around 1h;
@@ -44,3 +44,13 @@ make runlocal
     * We can't let this run the full day becuase Heroku has a limit of 1,000 dyno hours per month for our tier.
 4. API runs using Gunicorn and FastAPI
     * Source code executed is `src.app.main`
+
+## Python modules
+
+The Python version used must be one of https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-python, since this is the environment used by Heroku
+
+## Add a new endpoint
+
+1. If a new data source needs to be downloaded from the Portuguese Parliament it is necessary to update the cronjob task
+2. Follow the `src.daily_updater` examples to pre-process the data and store it in our datalake
+3. Add the new endpoints to `src.app.main`

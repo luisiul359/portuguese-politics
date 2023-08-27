@@ -1,16 +1,17 @@
 [tool.poetry]
 name = "portuguese_politics"
-version = "0.1.0"
+version = "0.1.1"
 description = "Extract information from different sources regarding Portuguese Politics."
 authors = ["Luis Silva <luisiul359@gmail.com>"]
 packages = [ 
     { include = "elections", from = "src" }, 
+    { include = "parliament", from = "src" }, 
     { include = "app", from = "src" },
     { include = "daily_updater", from = "src" } 
 ]
 
 [tool.poetry.dependencies]
-python = "3.9.13"
+python = "3.10.4"
 requests = "~2.31"
 pandas = "~2.0"
 ipykernel = "~6.24"
@@ -23,6 +24,7 @@ azure-storage-blob = "^12.17"
 tzlocal = "^2.1"
 apscheduler = "~3.10"
 python-dotenv = "~1.0"
+email-validator = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "~7.4"
