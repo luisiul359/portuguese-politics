@@ -17,7 +17,6 @@ ALL_PATHS = [
 ]
 
 ONGOING_PATHS = [
-    ("XIV", PATH_XIV),
     ("XV", PATH_XV),
 ]
 

@@ -17,9 +17,14 @@ PATH_XIV = "https://app.parlamento.pt/webutils/docs/doc.txt?path=6148523063446f7
 # XIV Legislatura
 PATH_XV = "https://app.parlamento.pt/webutils/docs/doc.txt?path=6148523063446f764c324679626d56304c3239775a57356b595852684c3052685a47397a51574a6c636e52766379394a626d6c6a6157463061585a6863793959566955794d45786c5a326c7a6247463064584a684c306c7561574e7059585270646d467a57465a66616e4e76626935306548513d&fich=IniciativasXV_json.txt&Inline=true"
 
-ALL_PATHS = [("XIV", PATH_XIV), ("XV", PATH_XV)]
+ALL_PATHS = [
+    ("XIV", PATH_XIV),
+    ("XV", PATH_XV)
+]
 
-ONGOING_PATHS = [("XV", PATH_XV)]
+ONGOING_PATHS = [
+    ("XV", PATH_XV)
+]
 
 
 def get_raw_data_from_blob(
