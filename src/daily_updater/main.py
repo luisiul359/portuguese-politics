@@ -9,14 +9,14 @@ from azure.storage.blob import BlobServiceClient, BlobClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
-from app.apis.schemas import EventPhase
-from parliament.extract import (
+from src.app.apis.schemas import EventPhase
+from src.parliament.extract import (
     ONGOING_PATHS as PATHS,
     get_raw_data_from_blob,
     get_initiatives,
     get_initiatives_votes,
 )
-from parliament.votes import (
+from src.parliament.votes import (
     get_party_approvals,
     get_party_correlations,
 )
@@ -69,7 +69,7 @@ def update_app():
         return {"Ok"}
 
 
-@sched.scheduled_job("cron", hour="19", minute="26")
+@sched.scheduled_job("cron", hour="20", minute="39")
 def main() -> None:
     utc_timestamp = (
         datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
