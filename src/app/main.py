@@ -1,13 +1,10 @@
-import json
 import logging
-import os
+#import os
 import sys
 from datetime import date
 from typing import Dict, Optional
 
-import pandas as pd
-import requests
-from src.app.parliament.models.initiatives import AnexoFaseIniciativa, AnexoIniciativa, EventoIniciativa, FaseIniciativa, Iniciativa, IniciativaAutor, IniciativaAutorDeputado, OrigemAutorIniciativa, TipoIniciativa
+
 # from src.app.apis.initiative_schema import Iniciativa, IniciativaAutor, OrigemAutorIniciativa, TipoIniciativa
 # from src.daily_updater.parliament.extract import get_raw_data_from_blob
 import uvicorn as uvicorn
@@ -29,7 +26,6 @@ from azure.storage.blob import ContainerClient as BlobContainerClient
 # from dotenv import load_dotenv
 from fastapi import FastAPI
 
-import time
 # from src.app.apis import schemas
 # from src.daily_updater.parliament import votes
 # from src.elections.extract import extract_legislativas_2019
