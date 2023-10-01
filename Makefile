@@ -15,11 +15,11 @@ init:
 	poetry install
 
 run:
-	poetry run uvicorn src.app.main:app --reload --env-file .env
+	poetry run uvicorn src.app.main:app --reload 
 
 runlocal:
 	docker build -t portuguese-politics .
-	docker run -d --name portuguese-politics -p 80:8000 --env-file .env portuguese-politics
+	docker run -d --name portuguese-politics -p 80:8000 portuguese-politics
 
 test:
 	#mkdir -p data
