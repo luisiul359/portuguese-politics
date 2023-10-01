@@ -2,7 +2,6 @@ import time
 
 from fastapi import APIRouter
 
-from src.app.parliament.config.constants import CURRENT_LEGISLATURE
 from src.app.parliament.models.initiatives import Iniciativa, ProjectoPropostaLei
 from src.app.parliament.models.parliament import Legislature
 from src.app.parliament.services.initiatives import get_initiative as service_get_initiative
