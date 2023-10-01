@@ -8,7 +8,7 @@ SHELL=/bin/bash
 
 # This will install the package manager Poetry
 setup:
-	curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | ${PYTHON} -
+	curl -sSL https://install.python-poetry.org/ | ${PYTHON} -
 	@echo "Done."
 
 init:
@@ -19,7 +19,7 @@ runlocal:
 
 run:
 	docker build -t portuguese-politics .
-	docker run -d --name portuguese-politics -p 80:8000 --env-file .env portuguese-politics
+	docker run -d --name portuguese-politics -p 80:8000 portuguese-politics
 
 test:
 	#mkdir -p data

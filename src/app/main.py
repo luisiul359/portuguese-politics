@@ -6,6 +6,10 @@ from datetime import date
 from typing import Dict, Optional
 
 import pandas as pd
+import requests
+from src.app.parliament.models.initiatives import AnexoFaseIniciativa, AnexoIniciativa, EventoIniciativa, FaseIniciativa, Iniciativa, IniciativaAutor, IniciativaAutorDeputado, OrigemAutorIniciativa, TipoIniciativa
+# from src.app.apis.initiative_schema import Iniciativa, IniciativaAutor, OrigemAutorIniciativa, TipoIniciativa
+# from src.daily_updater.parliament.extract import get_raw_data_from_blob
 import uvicorn as uvicorn
 from azure.storage.blob import BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
@@ -15,6 +19,22 @@ from fastapi import FastAPI
 from src.app.apis import schemas
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
+from azure.cosmos import (
+    CosmosClient,
+    DatabaseProxy,
+)
+from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import ContainerClient as BlobContainerClient
+
+# from dotenv import load_dotenv
+from fastapi import FastAPI
+
+import time
+# from src.app.apis import schemas
+# from src.daily_updater.parliament import votes
+# from src.elections.extract import extract_legislativas_2019
+
+from .parliament.routers import initiatives
 
 # load_dotenv(dotenv_path=".env")
 
@@ -181,7 +201,7 @@ def load_data():
         for legislature in ALL_LEGISLATURES
     }
 
-    # legislative data
+     # legislative data
     (
         parties_legislatives_2019,
         candidates_legislatives_2019,
@@ -208,6 +228,8 @@ tags_metadata = [
 
 app = FastAPI(openapi_tags=tags_metadata)
 
+
+# app.include_router(initiatives.router, prefix="/parliament", tags=["Parliament"])
 
 @app.on_event("startup")
 async def startup_event():

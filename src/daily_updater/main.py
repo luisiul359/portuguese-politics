@@ -21,6 +21,7 @@ from src.parliament.legislatures.extract import \
     ONGOING_PATHS as LegislaturePaths
 from src.parliament.legislatures.extract import get_legislatures_fields
 
+
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
@@ -163,6 +164,6 @@ def main() -> None:
 
 
 # if __name__ == "__main__":
-#   main()
+#    main()
 
 sched.start()
