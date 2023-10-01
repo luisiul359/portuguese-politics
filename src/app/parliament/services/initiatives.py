@@ -1,5 +1,5 @@
+import aiohttp
 import json
-import requests
 
 from typing import Any
 
@@ -8,13 +8,13 @@ from src.app.parliament.models.initiatives import AnexoFaseIniciativa, AnexoInic
 from src.app.parliament.models.parliament import Legislature
 
 
-def get_initiative(id: int, legislature: Legislature) -> Iniciativa:
-    initiative = find_initiative(id, legislature)
+async def get_initiative(id: int, legislature: Legislature) -> Iniciativa:
+    initiative = await find_initiative(id, legislature)
     return build_initiative_based_on_type(initiative)
 
 
-def find_initiative(id: int, legislature: Legislature) -> json:
-    data = get_parliament_data()
+async def find_initiative(id: int, legislature: Legislature) -> json:
+    data = await get_parliament_data()
     initiatives = data["ArrayOfPt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut"]["pt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut"]
     filtered_initiatives = [initiative for initiative in initiatives if is_valid_initiative(initiative, id, legislature)]
 
@@ -27,13 +27,13 @@ def is_valid_initiative(initiative: json, id: int, legislature: Legislature):
     return int(initiative["iniId"]) == id and initiative["iniLeg"] == str(legislature.value) and legislature == Legislature.XV
 
 
-def get_parliament_data() -> json:
-    response = requests.get(PARLIAMENT_INITIATIVES_XV)
-    
-    if response.status_code != 200:
-        raise ValueError(f"{response.status_code} - /parlamento.pt is not available")
-    return response.json()
-
+async def get_parliament_data() -> json:
+    async with aiohttp.ClientSession() as client:    
+        async with client.get(PARLIAMENT_INITIATIVES_XV) as response:
+            if response.status != 200:
+                raise ValueError(f"{response.status} - /parlamento.pt is not available")
+            return await response.json()
+  
 
 def build_initiative_based_on_type(initiative: json) -> Iniciativa:
     if initiative["iniTipo"] == "J" or initiative["iniTipo"] == "P":
