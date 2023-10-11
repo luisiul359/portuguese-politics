@@ -72,20 +72,23 @@ def extract_legislativas_2019() -> Tuple[pd.DataFrame, pd.DataFrame]:
     parties = []
     candidates = []
 
+    def clean_str(txt: str) -> str:
+        return None if txt in ["-", ""] else txt
+
     for party, values in raw_legislativas_2019["parties"].items():
         tmp_party = {
             "acronym": party.strip(),
-            "name": values.get("name", ""),
-            "description": values.get("description", ""),
-            "description_source": values.get("description_source", ""),
-            "email": values.get("email", ""),
-            "facebook": values.get("facebook", ""),
-            "instagram": values.get("instagram", ""),
+            "name": clean_str(values.get("name", "").strip()),
+            "description": clean_str(values.get("description", "").strip()),
+            "description_source": clean_str(values.get("description_source", "").strip()),
+            "email": clean_str(values.get("email", "").strip()),
+            "facebook": clean_str(values.get("facebook", "").strip()),
+            "instagram": clean_str(values.get("instagram", "").strip()),
             "logo": f"https://raw.githubusercontent.com/Politica-Para-Todos/ppt-archive/master/legislativas/legislativas-2019/partidos_logos/{values['logo']}"
             if "logo" in values
-            else "",
-            "twitter": values.get("twitter", ""),
-            "website": values.get("website"),
+            else None,
+            "twitter": clean_str(values.get("twitter", "").strip()),
+            "website": clean_str(values.get("website").strip()),
             "manifesto": _get_manifesto(party),
         }
 
@@ -107,13 +110,13 @@ def extract_legislativas_2019() -> Tuple[pd.DataFrame, pd.DataFrame]:
                 if c.get("is_lead_candidate", False):
                     tmp_candidates.update(
                         {
-                            "biography": c.get("biography", ""),
-                            "biography_source": c.get("biography_source", ""),
-                            "link_parlamento": c.get("link_parlamento", ""),
+                            "biography": clean_str(c.get("biography", "")),
+                            "biography_source": clean_str(c.get("biography_source", "").strip()),
+                            "link_parlamento": clean_str(c.get("link_parlamento", "").strip()),
                             "photo": f"https://raw.githubusercontent.com/Politica-Para-Todos/ppt-archive/master/legislativas/legislativas-2019/cabeca_de_lista_fotos/{c['photo']}"
                             if "photo" in c
-                            else "",
-                            "photo_source": c.get("photo_source", ""),
+                            else None,
+                            "photo_source": clean_str(c.get("photo_source", "").strip()),
                         }
                     )
 

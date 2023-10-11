@@ -83,7 +83,7 @@ def get_raw_data(path: str) -> List[Dict]:
 def get_initiatives_followups(raw_initiatives: List) -> pd.DataFrame:
     """Create a many to many relationship between initiatives (the main initiative and the folow-up)"""
 
-    data_initiatives_followups = pd.DataFrame()
+    data_initiatives_followups = []
     for initiative in tqdm(
         raw_initiatives, "getting_initiatives_followups", file=sys.stdout
     ):
@@ -115,17 +115,15 @@ def get_initiatives_followups(raw_initiatives: List) -> pd.DataFrame:
                 "descTipo", ""
             )
 
-            data_initiatives_followups = data_initiatives_followups.append(
-                info_to_store_details, ignore_index=True
-            )
+            data_initiatives_followups.append(info_to_store_details)
 
-    return data_initiatives_followups
+    return pd.DataFrame(data_initiatives_followups)
 
 
 def get_initiatives_petitions(raw_initiatives: List) -> pd.DataFrame:
     """Create a many to many relationship between initiatives and petitions"""
 
-    data_initiatives_petitions = pd.DataFrame()
+    data_initiatives_petitions = []
     for initiative in tqdm(
         raw_initiatives, "geting_initiatives_petitions", file=sys.stdout
     ):
@@ -154,11 +152,9 @@ def get_initiatives_petitions(raw_initiatives: List) -> pd.DataFrame:
                 "iniciativa_petition_assunto"
             ] = initiative_petition.get("assunto", "")
 
-            data_initiatives_petitions = data_initiatives_petitions.append(
-                info_to_store_details, ignore_index=True
-            )
+            data_initiatives_petitions.append(info_to_store_details)
 
-    return data_initiatives_petitions
+    return pd.DataFrame(data_initiatives_petitions)
 
 
 def _get_author(initiative: pd.Series) -> str:
@@ -205,7 +201,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
     Will return a raw version, i.e., a wide range of information that needs to be further parsed.
     """
 
-    data_initiatives = pd.DataFrame()
+    data_initiatives = []
     for initiative in tqdm(raw_initiatives, "getting_initiatives", file=sys.stdout):
         # save all the initiative information to be stored
         info_to_store = {}
@@ -555,9 +551,9 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
             # TODO: in event: teor, sumario, publicacao
             # TODO: in comissao:  audicoes, audiencias, distribuicaoSubcomissao, motivoNaoParecer, pareceresRecebidos, pedidosParecer, relatores
 
-            data_initiatives = data_initiatives.append(
-                info_to_store_details, ignore_index=True
-            )
+            data_initiatives.append(info_to_store_details)
+    
+    data_initiatives = pd.DataFrame(data_initiatives)
 
     # enhance data with processed fields
     data_initiatives["iniciativa_autor"] = data_initiatives.apply(
@@ -573,7 +569,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
     return data_initiatives
 
 
-# Improve: in some of the following situations I could maybe infer the vote
+# Improve: in some of the following situations maybe I could infer the vote
 #          of some parties
 # https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=44422
 # https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=44343
@@ -651,7 +647,7 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
         "iniciativa_votacao_unanime",
     ]
 
-    data_initiatives = pd.DataFrame()
+    data_initiatives = []
     for _, row in tqdm(
         initiatives.iterrows(),
         "getting_initiatives_votes",
@@ -675,7 +671,9 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
                     else:
                         columns_to_store[f"iniciativa_votacao_{party}"] = vote
 
-            data_initiatives = data_initiatives.append(columns_to_store)
+            data_initiatives.append(columns_to_store)
+    
+    data_initiatives = pd.DataFrame(data_initiatives)
 
     # enhance data with processed fields
     data_initiatives["iniciativa_aprovada"] = (

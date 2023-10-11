@@ -1,9 +1,10 @@
 from unittest import TestCase
 
-from src.daily_updater.parliament.extract import _split_vote_result, mydict
+from src.parliament.extract import _split_vote_result, mydict
 
 
 class TestProvider(TestCase):
+    
     def test_split_vote(self):
         vote = "afavor:ps,psd,be,pcp,cds-pp,pan,pev,ch,il,cr,jkm"
         res = _split_vote_result(vote)
