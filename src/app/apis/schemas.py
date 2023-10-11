@@ -1,8 +1,8 @@
-from enum import Enum
-from typing import List, Dict, Union, Optional
 from datetime import date
+from enum import Enum
+from typing import Dict, List, Optional, Union
 
-from pydantic import BaseModel, AnyHttpUrl, EmailStr, Field
+from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field
 
 
 class PartyApprovals(BaseModel):
@@ -64,7 +64,7 @@ class Party(BaseModel):
     logo: Optional[AnyHttpUrl]
     twitter: Optional[AnyHttpUrl]
     website: Optional[AnyHttpUrl]
-    manifesto: Optional[Union[List[AnyHttpUrl],AnyHttpUrl]]
+    manifesto: Optional[Union[List[AnyHttpUrl], AnyHttpUrl]]
 
 
 class PartiesOut(BaseModel):

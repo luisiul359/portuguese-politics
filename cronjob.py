@@ -1,18 +1,16 @@
 #!/usr/bin/env /path/to/.venv/bin/python3
 
-import os
 import datetime
+import json
 import logging
 import os
-import sys 
-import requests
-import json
-
+import sys
 from typing import Dict, List
-from azure.storage.blob import BlobServiceClient, BlobClient
+
+import requests
+from azure.storage.blob import BlobClient, BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
-
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -26,29 +24,29 @@ PATH_XIV = "https://app.parlamento.pt/webutils/docs/doc.txt?path=6148523063446f7
 PATH_XV = "https://app.parlamento.pt/webutils/docs/doc.txt?path=6148523063446f764c324679626d56304c3239775a57356b595852684c3052685a47397a51574a6c636e52766379394a626d6c6a6157463061585a6863793959566955794d45786c5a326c7a6247463064584a684c306c7561574e7059585270646d467a57465a66616e4e76626935306548513d&fich=IniciativasXV_json.txt&Inline=true"
 
 ALL_PATHS = [
-#  ("XIV", PATH_XIV),  # no need since the file is not being updated
-  ("XV", PATH_XV)
+    #  ("XIV", PATH_XIV),  # no need since the file is not being updated
+    ("XV", PATH_XV)
 ]
 
 
 def get_raw_data(path: str) -> List[Dict]:
-    """ Load the most recent data provided by Parlamento """
-    
-    try:
-      payload = requests.get(
-        path,
-        # fake, but wihtout it the request is rejected
-        headers={
-            'User-Agent': 'Mozilla/5.0',
-        },
-        timeout=40
-      )
-      assert payload.status_code == 200
+    """Load the most recent data provided by Parlamento"""
 
-      return payload.json()
+    try:
+        payload = requests.get(
+            path,
+            # fake, but wihtout it the request is rejected
+            headers={
+                "User-Agent": "Mozilla/5.0",
+            },
+            timeout=40,
+        )
+        assert payload.status_code == 200
+
+        return payload.json()
     except Exception:
-      logger.exception(f"Error downloading {path}.")
-      raise
+        logger.exception(f"Error downloading {path}.")
+        raise
 
 
 def get_blob_container() -> BlobContainerClient:
@@ -65,19 +63,23 @@ def get_blob_container() -> BlobContainerClient:
         raise
 
     try:
-        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        blob_service_client = BlobServiceClient.from_connection_string(
+            connection_string
+        )
         container_client = blob_service_client.get_container_client(container_name)
     except Exception:
-        logger.exception(f"Error connecting to blob storage container {container_name}:")
+        logger.exception(
+            f"Error connecting to blob storage container {container_name}:"
+        )
         raise
-        
+
     return container_client
 
 
 if __name__ == "__main__":
-
-    utc_timestamp = datetime.datetime.utcnow().replace(
-        tzinfo=datetime.timezone.utc).isoformat()
+    utc_timestamp = (
+        datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
+    )
 
     logger.info("Portuguese Politics daily extracter function ran at %s", utc_timestamp)
 
@@ -85,16 +87,20 @@ if __name__ == "__main__":
     blob_storage_container_client = get_blob_container()
 
     # Go through each supported legislature and download it
-    for legislature_name, legislature_path in tqdm(ALL_PATHS, "processing_legislatures", file=sys.stdout):
+    for legislature_name, legislature_path in tqdm(
+        ALL_PATHS, "processing_legislatures", file=sys.stdout
+    ):
         logger.info(f"Start processing {legislature_name}")
 
         data = get_raw_data(legislature_path)
-        
+
         try:
-            blob_client: BlobClient = blob_storage_container_client.get_blob_client(f"{legislature_name}.json")
+            blob_client: BlobClient = blob_storage_container_client.get_blob_client(
+                f"{legislature_name}.json"
+            )
             blob_client.upload_blob(json.dumps(data), overwrite=True)
         except Exception:
             logger.exception(f"Error processing {legislature_name}.")
             raise
-        
+
     logger.info("Done.")

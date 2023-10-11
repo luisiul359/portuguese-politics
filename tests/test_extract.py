@@ -1,10 +1,10 @@
 from unittest import TestCase
 
-from src.parliament.extract import _split_vote_result, mydict
+from src.parliament.common import MyDict
+from src.parliament.initiatives.extract import _split_vote_result
 
 
 class TestProvider(TestCase):
-    
     def test_split_vote(self):
         vote = "afavor:ps,psd,be,pcp,cds-pp,pan,pev,ch,il,cr,jkm"
         res = _split_vote_result(vote)
@@ -123,16 +123,16 @@ class TestProvider(TestCase):
     def test_mydict(self):
         d = {"a": None, "b": 5, "c": {"a": None, "b": 1, "c": {"a": None, "b": 1}}}
 
-        self.assertTrue(mydict(d).get("a", {}) == {})
-        self.assertTrue(mydict(d).get("a", 10) == 10)
-        self.assertTrue(mydict(d).get("b", {}) == 5)
-        self.assertTrue(mydict(d).get("c", {}).get("a", {}) == {})
-        self.assertTrue(mydict(d).get("c", {}).get("a", 10) == 10)
-        self.assertTrue(mydict(d).get("c", {}).get("b", {}) == 1)
-        self.assertTrue(mydict(d).get("c", {}).get("c", {}).get("a", {}) == {})
-        self.assertTrue(mydict(d).get("c", {}).get("c", {}).get("a", 10) == 10)
-        self.assertTrue(mydict(d).get("c", {}).get("c", {}).get("b", {}) == 1)
-        self.assertTrue(mydict(d).get("c", {}).get("d", {}) == {})
-        self.assertTrue(mydict(d).get("c", {}).get("d", 10) == 10)
-        self.assertTrue(mydict(d).get("d", {}) == {})
-        self.assertTrue(mydict(d).get("d", 10) == 10)
+        self.assertTrue(MyDict(d).get("a", {}) == {})
+        self.assertTrue(MyDict(d).get("a", 10) == 10)
+        self.assertTrue(MyDict(d).get("b", {}) == 5)
+        self.assertTrue(MyDict(d).get("c", {}).get("a", {}) == {})
+        self.assertTrue(MyDict(d).get("c", {}).get("a", 10) == 10)
+        self.assertTrue(MyDict(d).get("c", {}).get("b", {}) == 1)
+        self.assertTrue(MyDict(d).get("c", {}).get("c", {}).get("a", {}) == {})
+        self.assertTrue(MyDict(d).get("c", {}).get("c", {}).get("a", 10) == 10)
+        self.assertTrue(MyDict(d).get("c", {}).get("c", {}).get("b", {}) == 1)
+        self.assertTrue(MyDict(d).get("c", {}).get("d", {}) == {})
+        self.assertTrue(MyDict(d).get("c", {}).get("d", 10) == 10)
+        self.assertTrue(MyDict(d).get("d", {}) == {})
+        self.assertTrue(MyDict(d).get("d", 10) == 10)

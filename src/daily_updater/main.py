@@ -1,26 +1,25 @@
 import datetime
+import json
 import logging
 import os
 import sys
 
 import requests
 from apscheduler.schedulers.blocking import BlockingScheduler
-from azure.storage.blob import BlobServiceClient, BlobClient
+from azure.storage.blob import BlobClient, BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
 from src.app.apis.schemas import EventPhase
-from src.parliament.extract import (
-    ONGOING_PATHS as PATHS,
-    get_raw_data_from_blob,
-    get_initiatives,
-    get_initiatives_votes,
-)
-from src.parliament.votes import (
-    get_party_approvals,
-    get_party_correlations,
-)
-
+from src.parliament.initiatives.extract import ONGOING_PATHS as PATHS
+from src.parliament.initiatives.extract import (get_initiatives,
+                                                get_initiatives_votes,
+                                                get_raw_data_from_blob)
+from src.parliament.initiatives.votes import (get_party_approvals,
+                                              get_party_correlations)
+from src.parliament.legislatures.extract import \
+    ONGOING_PATHS as LegislaturePaths
+from src.parliament.legislatures.extract import get_legislatures_fields
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
@@ -69,18 +68,19 @@ def update_app():
         return {"Ok"}
 
 
-@sched.scheduled_job("cron", hour="3", minute="00")
-def main() -> None:
-    utc_timestamp = (
-        datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
-    )
+def run_legislatures(blob_storage_container_client: BlobContainerClient):
+    for legislature_name, path in tqdm(
+        LegislaturePaths, "processing_legislatures", file=sys.stdout
+    ):
+        blob_client: BlobClient = blob_storage_container_client.get_blob_client(
+            f"{legislature_name}_legislatures.json"
+        )
+        legislature_fields = get_legislatures_fields(path=path)
+        blob_client.upload_blob(json.dumps(legislature_fields), overwrite=True)
 
-    logger.info("Portuguese Politics daily updater ran at %s", utc_timestamp)
 
-    # Get Blob Storage client
-    blob_storage_container_client = get_blob_container()
-
-    # Go through each supported legislature and store the statistics 
+def run_initiatives(blob_storage_container_client: BlobContainerClient):
+    # Go through each supported legislature and store the statistics
     # and raw data
     for legislature_name, _ in tqdm(PATHS, "processing_legislatures", file=sys.stdout):
         # load raw data (json format) from Blob Sotrage (cache from parlamento API)
@@ -109,7 +109,7 @@ def main() -> None:
         )
         blob_client.upload_blob(initiatives_votes, overwrite=True)
 
-        # Break the results per initiative phase and 
+        # Break the results per initiative phase and
         # store the info in Azure Blob Storage
         for phase in EventPhase:
             if phase != EventPhase.ALL:
@@ -138,13 +138,31 @@ def main() -> None:
             )
             blob_client.upload_blob(party_correlations, overwrite=True)
 
+
+@sched.scheduled_job("cron", hour="3", minute="00")
+def main() -> None:
+    utc_timestamp = (
+        datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
+    )
+
+    logger.info("Portuguese Politics daily updater ran at %s", utc_timestamp)
+
+    # Get Blob Storage client
+    blob_storage_container_client = get_blob_container()
+
+    # get all initiatives data
+    run_initiatives(blob_storage_container_client)
+
+    # get all legislatures data
+    run_legislatures(blob_storage_container_client)
+
     # force API to reload the new data
     update_app()
 
     logger.info("Done.")
 
 
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #   main()
 
 sched.start()
