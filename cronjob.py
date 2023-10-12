@@ -39,7 +39,7 @@ def get_raw_data(path: str) -> List[Dict]:
             headers={
                 "User-Agent": "Mozilla/5.0",
             },
-            timeout=40,
+            #timeout=40,
         )
         assert payload.status_code == 200
 
