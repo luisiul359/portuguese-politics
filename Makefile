@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-.PHONY = setup init run test clean
+.PHONY = setup init run test clean format_code
 
 # Defines the default target that `make` will try to make, or in the case of a phony target, execute the specified commands
 # This target is executed whenever we just type `make`
@@ -14,10 +14,10 @@ setup:
 init:
 	poetry install
 
-run:
+runlocal:
 	poetry run uvicorn src.app.main:app --reload --env-file .env
 
-runlocal:
+run:
 	docker build -t portuguese-politics .
 	docker run -d --name portuguese-politics -p 80:8000 --env-file .env portuguese-politics
 
@@ -28,8 +28,6 @@ test:
 clean:
 	rm -r .venv 
 
-deploy-daily-updater
-	fly deploy . --app daily-updater --config daily_updater/fly.toml --dockerfile daily_updater/Dockerfile
-
-deploy-portuguese-politics
-	fly deploy . --app portuguese-politics
+format_code:
+	poetry run black .
+	poetry run isort .

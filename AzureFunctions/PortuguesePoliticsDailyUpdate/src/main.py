@@ -1,10 +1,9 @@
 import datetime
 import logging
 import sys
-import requests
 
 import azure.functions as func
-
+import requests
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
@@ -12,8 +11,9 @@ logger.addHandler(handler)
 
 
 def main(mytimer: func.TimerRequest) -> None:
-    utc_timestamp = datetime.datetime.utcnow().replace(
-        tzinfo=datetime.timezone.utc).isoformat()
+    utc_timestamp = (
+        datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
+    )
 
     if mytimer.past_due:
         logger.info("APP: The timer is past due!")

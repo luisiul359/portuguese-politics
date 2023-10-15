@@ -76,6 +76,8 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb
+notebooks/
 
 # IPython
 profile_default/
@@ -147,5 +149,6 @@ Thumbs.db
 .prof
 
 .vscode
+launch.json
 
 requirements.txt
