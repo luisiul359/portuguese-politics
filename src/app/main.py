@@ -50,29 +50,29 @@ def get_blob_container() -> BlobContainerClient:
     env vars all needed information, otherwise will fail.
     """
 
-    try:
-        connection_string = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
-        container_name = os.environ["AZURE_STORAGE_CONTAINER"]
-    except Exception:
-        logger.exception("Error collection env vars to access blob storage:")
-        raise
+#     try:
+#         connection_string = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
+#         container_name = os.environ["AZURE_STORAGE_CONTAINER"]
+#     except Exception:
+#         logger.exception("Error collection env vars to access blob storage:")
+#         raise
 
-    try:
-        blob_service_client = BlobServiceClient.from_connection_string(
-            connection_string
-        )
-        container_client = blob_service_client.get_container_client(container_name)
-    except Exception:
-        logger.exception(
-            f"Error connecting to blob storage container {container_name}:"
-        )
-        raise
+#     try:
+#         blob_service_client = BlobServiceClient.from_connection_string(
+#             connection_string
+#         )
+#         container_client = blob_service_client.get_container_client(container_name)
+#     except Exception:
+#         logger.exception(
+#             f"Error connecting to blob storage container {container_name}:"
+#         )
+#         raise
 
-    return container_client
+#     return container_client
 
 
-# Get Blob Storage client
-blob_storage_container_client = get_blob_container()
+# # Get Blob Storage client
+# blob_storage_container_client = get_blob_container()
 
 
 ####################################
@@ -80,55 +80,55 @@ blob_storage_container_client = get_blob_container()
 ####################################
 
 
-ALL_LEGISLATURES = ["XIV", "XV"]
+# ALL_LEGISLATURES = ["XIV", "XV"]
 
 
-def load_party_approvals(
-    legislature: str, phase: str, container_client: BlobContainerClient
-) -> pd.DataFrame:
-    """
-    Load party approvals for a full legislature from Blob Storage
-    """
+# def load_party_approvals(
+#     legislature: str, phase: str, container_client: BlobContainerClient
+# ) -> pd.DataFrame:
+#     """
+#     Load party approvals for a full legislature from Blob Storage
+#     """
 
-    data = container_client.get_blob_client(
-        f"{legislature}_party_approvals_{phase}.json"
-    )
-    return pd.DataFrame.from_dict(
-        json.loads(data.download_blob().readall()), orient="index"
-    )
-
-
-def load_party_correlations(
-    legislature: str, phase: str, container_client: BlobContainerClient
-) -> pd.DataFrame:
-    """
-    Load party correlations for a full legislature from Blob Storage
-    """
-
-    data = container_client.get_blob_client(
-        f"{legislature}_party_correlations_{phase}.json"
-    )
-    return pd.DataFrame.from_dict(
-        json.loads(data.download_blob().readall()), orient="index"
-    )
+#     data = container_client.get_blob_client(
+#         f"{legislature}_party_approvals_{phase}.json"
+#     )
+#     return pd.DataFrame.from_dict(
+#         json.loads(data.download_blob().readall()), orient="index"
+#     )
 
 
-def load_initiative_votes(
-    legislature: str, container_client: BlobContainerClient
-) -> pd.DataFrame:
-    """
-    Load initiative votes of a certain legislature from Blob Storage
-    """
+# def load_party_correlations(
+#     legislature: str, phase: str, container_client: BlobContainerClient
+# ) -> pd.DataFrame:
+#     """
+#     Load party correlations for a full legislature from Blob Storage
+#     """
 
-    data = container_client.get_blob_client(f"{legislature}_initiatives_votes.json")
-    df = pd.DataFrame.from_dict(
-        json.loads(data.download_blob().readall()), orient="index"
-    )
+#     data = container_client.get_blob_client(
+#         f"{legislature}_party_correlations_{phase}.json"
+#     )
+#     return pd.DataFrame.from_dict(
+#         json.loads(data.download_blob().readall()), orient="index"
+#     )
 
-    df["iniciativa_evento_data"] = pd.to_datetime(
-        df["iniciativa_evento_data"], unit="ms"
-    )
-    return df
+
+# def load_initiative_votes(
+#     legislature: str, container_client: BlobContainerClient
+# ) -> pd.DataFrame:
+#     """
+#     Load initiative votes of a certain legislature from Blob Storage
+#     """
+
+#     data = container_client.get_blob_client(f"{legislature}_initiatives_votes.json")
+#     df = pd.DataFrame.from_dict(
+#         json.loads(data.download_blob().readall()), orient="index"
+#     )
+
+#     df["iniciativa_evento_data"] = pd.to_datetime(
+#         df["iniciativa_evento_data"], unit="ms"
+#     )
+#     return df
 
 
 def load_legislatures_fields(
@@ -164,31 +164,31 @@ def load_data():
     global candidates_legislatives_2019
     global legislature_fields
 
-    # parliament data
-    party_approvals = {
-        legislature: {
-            phase.value: load_party_approvals(
-                legislature, phase.name.lower(), blob_storage_container_client
-            )
-            for phase in schemas.EventPhase
-        }
-        for legislature in ALL_LEGISLATURES
-    }
+#     # parliament data
+#     party_approvals = {
+#         legislature: {
+#             phase.value: load_party_approvals(
+#                 legislature, phase.name.lower(), blob_storage_container_client
+#             )
+#             for phase in schemas.EventPhase
+#         }
+#         for legislature in ALL_LEGISLATURES
+#     }
 
-    party_correlations = {
-        legislature: {
-            phase.value: load_party_correlations(
-                legislature, phase.name.lower(), blob_storage_container_client
-            )
-            for phase in schemas.EventPhase
-        }
-        for legislature in ALL_LEGISLATURES
-    }
+#     party_correlations = {
+#         legislature: {
+#             phase.value: load_party_correlations(
+#                 legislature, phase.name.lower(), blob_storage_container_client
+#             )
+#             for phase in schemas.EventPhase
+#         }
+#         for legislature in ALL_LEGISLATURES
+#     }
 
-    initiative_votes = {
-        legislature: load_initiative_votes(legislature, blob_storage_container_client)
-        for legislature in ALL_LEGISLATURES
-    }
+#     initiative_votes = {
+#         legislature: load_initiative_votes(legislature, blob_storage_container_client)
+#         for legislature in ALL_LEGISLATURES
+#     }
 
     legislature_fields = {
         legislature: load_legislatures_fields(
@@ -224,6 +224,7 @@ tags_metadata = [
 
 app = FastAPI(openapi_tags=tags_metadata)
 
+app.include_router(initiatives.router, prefix="/parliament", tags=["Parliament"])
 
 # app.include_router(initiatives.router, prefix="/parliament", tags=["Parliament"])
 
@@ -254,25 +255,25 @@ def get_party_approvals(
     if dt_ini or dt_fin or type:
         data_initiatives_votes_ = initiative_votes[legislature.value]
 
-        if event_phase != schemas.EventPhase.ALL:
-            data_initiatives_votes_ = data_initiatives_votes_[
-                data_initiatives_votes_["iniciativa_evento_fase"] == event_phase
-            ]
+#         if event_phase != schemas.EventPhase.ALL:
+#             data_initiatives_votes_ = data_initiatives_votes_[
+#                 data_initiatives_votes_["iniciativa_evento_fase"] == event_phase
+#             ]
 
-        if dt_ini:
-            data_initiatives_votes_ = data_initiatives_votes_[
-                data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini
-            ]
+#         if dt_ini:
+#             data_initiatives_votes_ = data_initiatives_votes_[
+#                 data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini
+#             ]
 
-        if dt_fin:
-            data_initiatives_votes_ = data_initiatives_votes_[
-                data_initiatives_votes_["iniciativa_evento_data"].dt.date <= dt_fin
-            ]
+#         if dt_fin:
+#             data_initiatives_votes_ = data_initiatives_votes_[
+#                 data_initiatives_votes_["iniciativa_evento_data"].dt.date <= dt_fin
+#             ]
 
-        if type:
-            data_initiatives_votes_ = data_initiatives_votes_[
-                data_initiatives_votes_["iniciativa_tipo"] == type
-            ]
+#         if type:
+#             data_initiatives_votes_ = data_initiatives_votes_[
+#                 data_initiatives_votes_["iniciativa_tipo"] == type
+#             ]
 
         _party_approvals = votes.get_party_approvals(data_initiatives_votes_).to_json(
             orient="index"
@@ -282,28 +283,28 @@ def get_party_approvals(
             event_phase.value
         ].to_json(orient="index")
 
-    # transform to the expected schema
-    approvals = []
-    for autor, value in json.loads(_party_approvals).items():
-        data = {
-            "id": autor.lower()
-            .replace(" ", "-")
-            .replace("cristina-rodrigues", "cr")
-            .replace("joacine-katar-moreira", "jkm"),
-            "nome": autor,
-            "total_iniciativas": value["total_iniciativas"],
-            "total_iniciativas_aprovadas": value["total_iniciativas_aprovadas"],
-        }
+#     # transform to the expected schema
+#     approvals = []
+#     for autor, value in json.loads(_party_approvals).items():
+#         data = {
+#             "id": autor.lower()
+#             .replace(" ", "-")
+#             .replace("cristina-rodrigues", "cr")
+#             .replace("joacine-katar-moreira", "jkm"),
+#             "nome": autor,
+#             "total_iniciativas": value["total_iniciativas"],
+#             "total_iniciativas_aprovadas": value["total_iniciativas_aprovadas"],
+#         }
 
-        data["aprovacoes"] = {
-            k.replace("iniciativa_votacao_", ""): v
-            for k, v in value.items()
-            if k.startswith("iniciativa_votacao_")
-        }
+#         data["aprovacoes"] = {
+#             k.replace("iniciativa_votacao_", ""): v
+#             for k, v in value.items()
+#             if k.startswith("iniciativa_votacao_")
+#         }
 
-        approvals.append(data)
+#         approvals.append(data)
 
-    return {"autores": approvals}
+#     return {"autores": approvals}
 
 
 @app.get(
@@ -324,25 +325,25 @@ def get_party_correlations(
     if dt_ini or dt_fin or type:
         data_initiatives_votes_ = initiative_votes[legislature.value]
 
-        if event_phase != schemas.EventPhase.ALL:
-            data_initiatives_votes_ = data_initiatives_votes_[
-                data_initiatives_votes_["iniciativa_evento_fase"] == event_phase
-            ]
+#         if event_phase != schemas.EventPhase.ALL:
+#             data_initiatives_votes_ = data_initiatives_votes_[
+#                 data_initiatives_votes_["iniciativa_evento_fase"] == event_phase
+#             ]
 
-        if dt_ini:
-            data_initiatives_votes_ = data_initiatives_votes_[
-                data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini
-            ]
+#         if dt_ini:
+#             data_initiatives_votes_ = data_initiatives_votes_[
+#                 data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini
+#             ]
 
-        if dt_fin:
-            data_initiatives_votes_ = data_initiatives_votes_[
-                data_initiatives_votes_["iniciativa_evento_data"].dt.date <= dt_fin
-            ]
+#         if dt_fin:
+#             data_initiatives_votes_ = data_initiatives_votes_[
+#                 data_initiatives_votes_["iniciativa_evento_data"].dt.date <= dt_fin
+#             ]
 
-        if type:
-            data_initiatives_votes_ = data_initiatives_votes_[
-                data_initiatives_votes_["iniciativa_tipo"] == type
-            ]
+#         if type:
+#             data_initiatives_votes_ = data_initiatives_votes_[
+#                 data_initiatives_votes_["iniciativa_tipo"] == type
+#             ]
 
         _party_corr = votes.get_party_correlations(data_initiatives_votes_).to_json(
             orient="index"
@@ -352,19 +353,19 @@ def get_party_correlations(
             orient="index"
         )
 
-    # transform to the expected schema
-    res = []
-    for _, corr in json.loads(_party_corr).items():
-        res.append(
-            {
-                "nome": corr.pop("nome").replace("iniciativa_votacao_", ""),
-                "correlacoes": {
-                    k.replace("iniciativa_votacao_", ""): v for k, v in corr.items()
-                },
-            }
-        )
+#     # transform to the expected schema
+#     res = []
+#     for _, corr in json.loads(_party_corr).items():
+#         res.append(
+#             {
+#                 "nome": corr.pop("nome").replace("iniciativa_votacao_", ""),
+#                 "correlacoes": {
+#                     k.replace("iniciativa_votacao_", ""): v for k, v in corr.items()
+#                 },
+#             }
+#         )
 
-    return {"partido": res}
+#     return {"partido": res}
 
 
 @app.get("/parliament/initiatives", tags=["Parliament"])
@@ -391,49 +392,49 @@ def get_initiatives(
             data_initiatives_votes_["iniciativa_evento_fase"] == event_phase
         ]
 
-    if dt_ini:
-        data_initiatives_votes_ = data_initiatives_votes_[
-            data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini
-        ]
+#     if dt_ini:
+#         data_initiatives_votes_ = data_initiatives_votes_[
+#             data_initiatives_votes_["iniciativa_evento_data"].dt.date >= dt_ini
+#         ]
 
-    if dt_fin:
-        data_initiatives_votes_ = data_initiatives_votes_[
-            data_initiatives_votes_["iniciativa_evento_data"].dt.date <= dt_fin
-        ]
+#     if dt_fin:
+#         data_initiatives_votes_ = data_initiatives_votes_[
+#             data_initiatives_votes_["iniciativa_evento_data"].dt.date <= dt_fin
+#         ]
 
-    if name_filter:
-        data_initiatives_votes_ = data_initiatives_votes_[
-            data_initiatives_votes_["iniciativa_titulo"]
-            .str.lower()
-            .str.contains(name_filter.lower())
-        ]
+#     if name_filter:
+#         data_initiatives_votes_ = data_initiatives_votes_[
+#             data_initiatives_votes_["iniciativa_titulo"]
+#             .str.lower()
+#             .str.contains(name_filter.lower())
+#         ]
 
-    if party:
-        data_initiatives_votes_ = data_initiatives_votes_[
-            data_initiatives_votes_["iniciativa_autor"].str.lower() == party.lower()
-        ]
+#     if party:
+#         data_initiatives_votes_ = data_initiatives_votes_[
+#             data_initiatives_votes_["iniciativa_autor"].str.lower() == party.lower()
+#         ]
 
-    if deputy:
-        data_initiatives_votes_ = data_initiatives_votes_[
-            data_initiatives_votes_["iniciativa_autor_deputado"]
-            .str.lower()
-            .str.contains(deputy.lower())
-        ]
+#     if deputy:
+#         data_initiatives_votes_ = data_initiatives_votes_[
+#             data_initiatives_votes_["iniciativa_autor_deputado"]
+#             .str.lower()
+#             .str.contains(deputy.lower())
+#         ]
 
-    initiatives = (
-        votes.get_initiatives(data_initiatives_votes_)
-        .sort_values("iniciativa_data")
-        .head(limit + offset)
-        .tail(limit)
-        .to_json(orient="index")
-    )
+#     initiatives = (
+#         votes.get_initiatives(data_initiatives_votes_)
+#         .sort_values("iniciativa_data")
+#         .head(limit + offset)
+#         .tail(limit)
+#         .to_json(orient="index")
+#     )
 
-    # transform to the expected schema
-    res = []
-    for _, initiative in json.loads(initiatives).items():
-        res.append(initiative)
+#     # transform to the expected schema
+#     res = []
+#     for _, initiative in json.loads(initiatives).items():
+#         res.append(initiative)
 
-    return {"initiativas": res}
+#     return {"initiativas": res}
 
 
 @app.get("/parliament/legislatures", tags=["Parliament"])
@@ -525,5 +526,5 @@ def update():
     logger.info("New data loaded.")
 
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
