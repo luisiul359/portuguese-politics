@@ -18,5 +18,9 @@ deploy:
 	poetry export -f requirements.txt --output requirements.txt --without-hashes
 	func azure functionapp publish PortuguesePoliticsDailyUpdate
 
+test:
+	#mkdir -p data
+	poetry run pytest **/tests # --cov=. --cov-report=xml:data/unit_coverage.xml
+
 clean:
 	rm -r .venv 

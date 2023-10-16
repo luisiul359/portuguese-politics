@@ -21,11 +21,12 @@ from src.parliament.legislatures.extract import \
     ONGOING_PATHS as LegislaturePaths
 from src.parliament.legislatures.extract import get_legislatures_fields
 
+
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
 
-sched = BlockingScheduler()
+# sched = BlockingScheduler()
 
 
 def get_blob_container() -> BlobContainerClient:
@@ -34,31 +35,31 @@ def get_blob_container() -> BlobContainerClient:
     env vars all needed information, otherwise will fail.
     """
 
-    try:
-        connection_string = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
-        container_name = os.environ["AZURE_STORAGE_CONTAINER"]
-    except Exception:
-        logger.exception("Error collection env vars to access blob storage:")
-        raise
+#     try:
+#         connection_string = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
+#         container_name = os.environ["AZURE_STORAGE_CONTAINER"]
+#     except Exception:
+#         logger.exception("Error collection env vars to access blob storage:")
+#         raise
 
-    try:
-        blob_service_client = BlobServiceClient.from_connection_string(
-            connection_string
-        )
-        container_client = blob_service_client.get_container_client(container_name)
-    except Exception:
-        logger.exception(
-            f"Error connecting to blob storage container {container_name}:"
-        )
-        raise
+#     try:
+#         blob_service_client = BlobServiceClient.from_connection_string(
+#             connection_string
+#         )
+#         container_client = blob_service_client.get_container_client(container_name)
+#     except Exception:
+#         logger.exception(
+#             f"Error connecting to blob storage container {container_name}:"
+#         )
+#         raise
 
-    return container_client
+#     return container_client
 
 
-def update_app():
-    """
-    Send a request to Portuguese Politics app to refresh data
-    """
+# def update_app():
+#     """
+#     Send a request to Portuguese Politics app to refresh data
+#     """
 
     r = requests.get("https://portuguese-politics.herokuapp.com/update")
     if r.status_code != 200:
@@ -97,17 +98,17 @@ def run_initiatives(blob_storage_container_client: BlobContainerClient):
         # collect vote information from all initiatives
         df_initiatives_votes = get_initiatives_votes(df_initiatives)
 
-        # we do not need those initiatives, they were dropped
-        df_initiatives_votes = df_initiatives_votes[
-            df_initiatives_votes["iniciativa_votacao_res"] != "Retirado"
-        ]
+#         # we do not need those initiatives, they were dropped
+#         df_initiatives_votes = df_initiatives_votes[
+#             df_initiatives_votes["iniciativa_votacao_res"] != "Retirado"
+#         ]
 
-        # store initiative votes in Blob Storage, already processed
-        initiatives_votes = df_initiatives_votes.to_json(orient="index")
-        blob_client: BlobClient = blob_storage_container_client.get_blob_client(
-            f"{legislature_name}_initiatives_votes.json"
-        )
-        blob_client.upload_blob(initiatives_votes, overwrite=True)
+#         # store initiative votes in Blob Storage, already processed
+#         initiatives_votes = df_initiatives_votes.to_json(orient="index")
+#         blob_client: BlobClient = blob_storage_container_client.get_blob_client(
+#             f"{legislature_name}_initiatives_votes.json"
+#         )
+#         blob_client.upload_blob(initiatives_votes, overwrite=True)
 
         # Break the results per initiative phase and
         # store the info in Azure Blob Storage
@@ -119,24 +120,24 @@ def run_initiatives(blob_storage_container_client: BlobContainerClient):
             else:
                 df_initiatives_votes_ = df_initiatives_votes
 
-            party_approvals = get_party_approvals(df_initiatives_votes_).to_json(
-                orient="index"
-            )
-            party_correlations = get_party_correlations(df_initiatives_votes_).to_json(
-                orient="index"
-            )
+#             party_approvals = get_party_approvals(df_initiatives_votes_).to_json(
+#                 orient="index"
+#             )
+#             party_correlations = get_party_correlations(df_initiatives_votes_).to_json(
+#                 orient="index"
+#             )
 
-            # party_approvals
-            blob_client: BlobClient = blob_storage_container_client.get_blob_client(
-                f"{legislature_name}_party_approvals_{phase.name.lower()}.json"
-            )
-            blob_client.upload_blob(party_approvals, overwrite=True)
+#             # party_approvals
+#             blob_client: BlobClient = blob_storage_container_client.get_blob_client(
+#                 f"{legislature_name}_party_approvals_{phase.name.lower()}.json"
+#             )
+#             blob_client.upload_blob(party_approvals, overwrite=True)
 
-            # party_correlations
-            blob_client: BlobClient = blob_storage_container_client.get_blob_client(
-                f"{legislature_name}_party_correlations_{phase.name.lower()}.json"
-            )
-            blob_client.upload_blob(party_correlations, overwrite=True)
+#             # party_correlations
+#             blob_client: BlobClient = blob_storage_container_client.get_blob_client(
+#                 f"{legislature_name}_party_correlations_{phase.name.lower()}.json"
+#             )
+#             blob_client.upload_blob(party_correlations, overwrite=True)
 
 
 @sched.scheduled_job("cron", hour="3", minute="00")
@@ -159,10 +160,10 @@ def main() -> None:
     # force API to reload the new data
     update_app()
 
-    logger.info("Done.")
+#     logger.info("Done.")
 
 
-# if __name__ == "__main__":
-#   main()
+# # if __name__ == "__main__":
+# #    main()
 
-sched.start()
+# sched.start()
