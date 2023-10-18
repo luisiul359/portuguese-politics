@@ -14,11 +14,11 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-# For future initiative types, they should inherit from Iniciativa
+# For future initiative types, they could inherit from Iniciativa
 # and also be added as Union[type1, type2, ...] on the response model
 @router.get("/{id}", response_model=ProjectoPropostaLei)
 async def get_initiative(id: int, legislature: Legislature = Legislature.XV) -> Iniciativa:
-    timer = time.time()
+    timer = time.time() # just to test time with sync/async code
     initiative = await service_get_initiative(int(id), legislature)
     print(f"Timer {time.time() - timer:0.3}")
     return initiative

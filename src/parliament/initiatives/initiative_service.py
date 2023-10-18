@@ -3,9 +3,9 @@ import json
 
 from typing import Any
 
-from src.app.parliament.config.constants import PARLIAMENT_INITIATIVES_XV
-from src.app.parliament.models.initiatives import AnexoFaseIniciativa, AnexoIniciativa, FaseIniciativa, Iniciativa, IniciativaAutor, IniciativaAutorDeputado, OrigemAutorIniciativa, ProjectoPropostaLei, TipoIniciativa
-from src.app.parliament.models.parliament import Legislature
+from .common import PARLIAMENT_INITIATIVES_XV
+from .initiative_model import AnexoFaseIniciativa, AnexoIniciativa, FaseIniciativa, Iniciativa, IniciativaAutor, IniciativaAutorDeputado, OrigemAutorIniciativa, ProjectoPropostaLei, TipoIniciativa
+from ..parliament_model import Legislature
 
 
 async def get_initiative(id: int, legislature: Legislature) -> Iniciativa:
@@ -97,6 +97,7 @@ def map_stages(initiative_stages: [Any]):
         data=stage["dataFase"],
         evento=stage["fase"],
         nota_evento=stage["obsFase"] if "obsFase" in stage else None,
+        fase_publicacao=None,
         anexo=AnexoFaseIniciativa(
             nome=stage["anexosFase"]["pt_gov_ar_objectos_iniciativas_AnexosOut"]["anexoNome"],
             documento_url=stage["anexosFase"]["pt_gov_ar_objectos_iniciativas_AnexosOut"]["anexoFich"]
