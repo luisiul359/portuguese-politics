@@ -16,6 +16,7 @@ from src.app.apis import schemas
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
 from ..parliament.deputies.router import router as deputies_router
+from ..parliament.agenda.router import router as agenda_router
 
 # load_dotenv(dotenv_path=".env")
 
@@ -208,10 +209,10 @@ tags_metadata = [
 
 
 app = FastAPI(openapi_tags=tags_metadata)
-
 parliament_app = FastAPI() #tag parlamento
-parliament_app.include_router(deputies_router)
 
+parliament_app.include_router(deputies_router)
+parliament_app.include_router(agenda_router)
 
 app.mount("/parlamento", parliament_app)
 
