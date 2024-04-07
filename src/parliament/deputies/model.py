@@ -107,3 +107,21 @@ class Deputado(BaseModel):
     situacao: list[SituacaoDeputado]
     cargo: Optional[CargoDeputado]
     legislatura: Legislatura
+
+
+## Absences
+class FaltaDeputado(BaseModel):
+    tipo: str
+    motivo: str
+
+
+class AusenciaReuniao(BaseModel):
+    id: int
+    data: str
+    falta: FaltaDeputado
+
+
+class AusenciasDeputado(BaseModel):
+    numeroReunioes: int
+    numeroAusencias: int
+    reunioesAusente: list[AusenciaReuniao]
