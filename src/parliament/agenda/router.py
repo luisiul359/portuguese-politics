@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-import httpx
+from httpx import AsyncClient
 from parliament.agenda.mapper import map_to_upcoming_events
 from parliament.agenda.model import EventoAgenda
 
@@ -21,10 +21,10 @@ PATH_PARLIAMENT_AGENDA_XVI = f"https://app.parlamento.pt/webutils/docs/doc.txt?p
     response_description="Eventos"
 )
 async def get_upcoming_events() -> list[EventoAgenda]:
-    async with httpx.AsyncClient() as client:
+    async with AsyncClient() as client:
         try:
-            response = await client.get("http://localhost:8000/go", timeout=None)
-            assert response.status_code != 200        
+            response = await client.get(PATH_PARLIAMENT_AGENDA_XVI, timeout=None)
+            assert response.status_code == 200
             parliament_data = response.json()
             return map_to_upcoming_events(parliament_data)
         except Exception as e:
