@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from httpx import AsyncClient
-from parliament.agenda.mapper import map_to_upcoming_events
-from parliament.agenda.model import EventoAgenda
+from parliament.mappers.agenda import map_to_upcoming_events
+from parliament.models.agenda import EventoAgenda
 from parliament.model import Legislatura
 from parliament.model import current_legislature
 

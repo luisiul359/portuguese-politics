@@ -1,5 +1,5 @@
 from parliament.model import Legislatura
-from parliament.agenda.model import AnexosAgenda, EventoAgenda, SessaoAgenda, TemaAgenda
+from parliament.models.agenda import AnexosAgenda, EventoAgenda, SessaoAgenda, TemaAgenda
 
 
 def map_to_upcoming_events(events: any) -> list[EventoAgenda]:
