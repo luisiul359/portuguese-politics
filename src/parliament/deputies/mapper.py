@@ -1,4 +1,4 @@
-from parliament.deputies.model import CargoDeputado, CirculoEleitoral, CirculoEleitoralDeputado, Deputado, DescricaoCargoDeputado, DescricaoSituacaoDeputado, GrupoParlamentar, NomeGrupoParlamentar, SiglaGrupoParlamentar, SituacaoDeputado
+from parliament.deputies.model import CargoDeputado, CirculoEleitoral, CirculoEleitoralDeputado, Deputado, DescricaoCargoDeputado, DescricaoSituacaoDeputado, AusenciaReuniao, AusenciasDeputado, FaltaDeputado, GrupoParlamentar, NomeGrupoParlamentar, SiglaGrupoParlamentar, SituacaoDeputado
 
 
 def map_to_deputies(data: any) -> list[Deputado]:
@@ -162,3 +162,54 @@ def map_to_pg_name(party_acronym: str) -> NomeGrupoParlamentar:
             return NomeGrupoParlamentar.NI
         case _:
             raise NameError(party_acronym)
+
+
+## Absences
+def get_absences(id: int, data: any):
+    meetings = data["OrganizacaoAR"]["Plenario"]["Reunioes"]["ReuniaoPlenario"]
+    total_meetings = len(meetings)
+    mock_name = "ANDRÉ VENTURA"
+    mock_gp_acronym = "CH"
+    absent_meetings: list[AusenciaReuniao] = []
+
+    for meeting in meetings:
+        deputies = meeting["Presencas"]["presencas"]["pt_gov_ar_wsgode_objectos_Presencas"]
+
+        for deputy in deputies:
+            if (is_absent(mock_name, mock_gp_acronym, deputy)):
+                current_meeting = meeting["Reuniao"]
+                
+                absent_meetings.append(AusenciaReuniao(
+                    id=current_meeting["reuId"],
+                    data=meeting["Presencas"]["dtReuniao"],
+                    falta=FaltaDeputado(
+                        tipo=map_to_absence_desc(deputy["siglaFalta"]),
+                        motivo=deputy["motivoFalta"]
+                    )
+                ))
+
+    return AusenciasDeputado(
+        numeroReunioes=total_meetings,
+        numeroAusencias=len(absent_meetings),
+        reunioesAusente=absent_meetings
+    )
+
+
+def is_absent(name: str, gp: str, deputy: any) -> bool:
+    if (deputy["nomeDeputado"] == name and gp == deputy["siglaGrupo"] and "motivoFalta" in deputy):
+        return True
+    return False
+
+
+def map_to_absence_desc(falta: str) -> str:
+    match falta:
+        case "QVJ" | "FJ":
+            return "Falta Justificada"
+        case "FI":
+            return "Falta Injustificada"
+        case "CO":
+            return "Presença em Comissão autorizada pelo Presidente da Assembleia da República"
+        case "ME" | "MP":
+            return "Ausência em Missão Parlamentar (AMP)"
+        case _:
+            raise NameError(falta)
