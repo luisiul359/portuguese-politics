@@ -7,3 +7,4 @@ class Legislatura(str, Enum):
 
 
 supported_legislatures = {Legislatura.XV, Legislatura.XVI}
+current_legislature = list(supported_legislatures)[-1]
