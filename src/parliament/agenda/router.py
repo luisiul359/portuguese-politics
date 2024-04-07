@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException
 from httpx import AsyncClient
 from parliament.agenda.mapper import map_to_upcoming_events
 from parliament.agenda.model import EventoAgenda
+from parliament.model import Legislatura
+from parliament.model import current_legislature
 
 
 router = APIRouter(
@@ -20,11 +22,15 @@ PATH_PARLIAMENT_AGENDA_XVI = f"https://app.parlamento.pt/webutils/docs/doc.txt?p
     name="",
     response_description="Eventos"
 )
-async def get_upcoming_events() -> list[EventoAgenda]:
+async def get_agenda() -> list[EventoAgenda]:
     async with AsyncClient() as client:
         try:
-            response = await client.get(PATH_PARLIAMENT_AGENDA_XVI, timeout=None)
+            parliament_url = select_parliament_resource(current_legislature)
+            assert parliament_url != ""
+
+            response = await client.get(parliament_url, timeout=None)
             assert response.status_code == 200
+            
             parliament_data = response.json()
             return map_to_upcoming_events(parliament_data)
         except Exception as e:
@@ -32,3 +38,11 @@ async def get_upcoming_events() -> list[EventoAgenda]:
                 response.status_code,
                 detail=f"Erro ao recolher dados no parlamento.pt. Por favor tente mais tarde. {e}"
             )
+
+
+def select_parliament_resource(legislature: Legislatura) -> str:
+    match legislature:
+        case Legislatura.XVI:
+            return PATH_PARLIAMENT_AGENDA_XVI
+        case _:
+            return ""
