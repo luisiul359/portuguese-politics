@@ -25,10 +25,10 @@ PATH_PARLIAMENT_AGENDA_XVI = f"https://app.parlamento.pt/webutils/docs/doc.txt?p
 async def get_agenda() -> list[EventoAgenda]:
     async with AsyncClient() as client:
         try:
-            parliament_url = select_parliament_resource(current_legislature)
-            assert parliament_url != ""
+            resource_url = select_parliament_resource_url(current_legislature)
+            assert resource_url != ""
 
-            response = await client.get(parliament_url, timeout=None)
+            response = await client.get(resource_url, timeout=None)
             assert response.status_code == 200
             
             parliament_data = response.json()
@@ -40,7 +40,7 @@ async def get_agenda() -> list[EventoAgenda]:
             )
 
 
-def select_parliament_resource(legislature: Legislatura) -> str:
+def select_parliament_resource_url(legislature: Legislatura) -> str:
     match legislature:
         case Legislatura.XVI:
             return PATH_PARLIAMENT_AGENDA_XVI
