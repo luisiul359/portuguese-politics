@@ -18,9 +18,9 @@ PATH_PARLIAMENT_AGENDA_XVI = f"https://app.parlamento.pt/webutils/docs/doc.txt?p
 
 @router.get(
     path="",
-    description="Retorna os próximos eventos agendados na Assembleia da República na presente Legislatura.",
+    description="Retorna os próximos eventos agendados na Assembleia da República.",
     name="",
-    response_description="Eventos"
+    response_description="Eventos na presente Legislatura"
 )
 async def get_agenda() -> list[EventoAgenda]:
     async with AsyncClient() as client:
