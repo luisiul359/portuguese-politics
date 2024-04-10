@@ -11,8 +11,8 @@ def current_env() -> str:
 
 
 class Configuration(BaseSettings):
-    app_name: str = "Portuguese Politics API"
     env: str = current_env() 
+    app_name: str = "Portuguese Politics API"
 
 
 config = Configuration()
