@@ -1,4 +1,4 @@
-from parliament.model import Legislatura
+from parliament.mappers.legislature import map_to_legislature
 from parliament.models.agenda import AnexosAgenda, EventoAgenda, SessaoAgenda, TemaAgenda
 
 
@@ -31,7 +31,7 @@ def map_to_upcoming_events(events: any) -> list[EventoAgenda]:
         anexosPlenario=map_to_attaches(event["AnexosPlenario"]),
         link=None if "Link" not in event else event["Link"],
         duracaoDiaInteiro=event["AllDayEvent"],
-        legislatura=Legislatura.XVI #event["LegDes"]
+        legislatura=map_to_legislature(event["LegDes"])
     ) for event in events]
 
 

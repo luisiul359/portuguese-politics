@@ -34,7 +34,7 @@ async def get_agenda() -> list[EventoAgenda]:
             return map_to_upcoming_events(parliament_data)
         except Exception as e:
             raise HTTPException(
-                response.status_code,
+                500,
                 detail=f"Erro ao recolher dados no parlamento.pt. Por favor tente mais tarde. {e}"
             )
 
