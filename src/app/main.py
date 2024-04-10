@@ -9,7 +9,7 @@ import pandas as pd
 import uvicorn as uvicorn
 from azure.storage.blob import BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from src.app.apis import schemas
@@ -18,7 +18,7 @@ from src.parliament.initiatives import votes
 from ..parliament.routers.agenda import router as agenda_router
 from ..app.config import config
 
-load_dotenv(dotenv_path=".env")
+# load_dotenv(dotenv_path=".env")
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
@@ -45,7 +45,7 @@ def get_blob_container() -> BlobContainerClient:
 
     try:
         blob_service_client = BlobServiceClient.from_connection_string(
-            connection_string,
+            connection_string
         )
         container_client = blob_service_client.get_container_client(container_name)
     except Exception:
@@ -123,9 +123,7 @@ def load_legislatures_fields(
     """
     Load initiative votes of a certain legislature from Blob Storage
     """
-    print("PRE-DOWNLOAD")
     data = container_client.get_blob_client(f"{legislature}_legislatures.json")
-    print(">>>>>>>", data)
     return json.loads(data.download_blob().readall())
 
 
