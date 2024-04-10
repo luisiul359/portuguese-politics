@@ -2,6 +2,7 @@ from parliament.mappers.legislature import map_to_legislature
 from parliament.models.agenda import AnexosAgenda, EventoAgenda, SessaoAgenda, TemaAgenda
 
 
+# TODO: mapping is failing with latest requests
 def map_to_upcoming_events(events: any) -> list[EventoAgenda]:
     return [EventoAgenda(
         id=event["Id"],
