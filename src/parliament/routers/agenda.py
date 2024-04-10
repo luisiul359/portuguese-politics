@@ -3,7 +3,7 @@ from httpx import AsyncClient
 from parliament.mappers.agenda import map_to_upcoming_events
 from parliament.models.agenda import EventoAgenda
 from parliament.model import Legislatura
-from parliament.model import current_legislature
+from parliament.constants import current_legislature
 
 
 router = APIRouter(
@@ -26,7 +26,6 @@ async def get_agenda() -> list[EventoAgenda]:
     async with AsyncClient() as client:
         try:
             resource_url = select_parliament_resource_url(current_legislature)
-            assert resource_url != ""
 
             response = await client.get(resource_url, timeout=None)
             assert response.status_code == 200
@@ -41,8 +40,9 @@ async def get_agenda() -> list[EventoAgenda]:
 
 
 def select_parliament_resource_url(legislature: Legislatura) -> str:
-    match legislature:
-        case Legislatura.XVI:
-            return PATH_PARLIAMENT_AGENDA_XVI
-        case _:
-            return ""
+    if (legislature == current_legislature):
+        return PATH_PARLIAMENT_AGENDA_XVI
+    raise HTTPException(
+        500,
+        f"There was not found a resource for this legislature: {legislature.value}"
+    )
