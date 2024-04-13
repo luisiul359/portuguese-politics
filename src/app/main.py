@@ -4,14 +4,12 @@ import os
 import sys
 from datetime import date
 from typing import Dict, Optional
-
 import pandas as pd
 import uvicorn as uvicorn
 from azure.storage.blob import BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
 # from dotenv import load_dotenv
 from fastapi import FastAPI
-
 from src.app.apis import schemas
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
@@ -209,7 +207,6 @@ tags_metadata = [
 app = FastAPI(openapi_tags=tags_metadata)
 
 parliament_app = FastAPI() #tag parlamento
-
 parliament_app.include_router(agenda_router)
 
 app.mount("/parlamento", parliament_app)
