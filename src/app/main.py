@@ -13,7 +13,7 @@ from fastapi import FastAPI
 from src.app.apis import schemas
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
-from ..parliament.routers.agenda import router as agenda_router
+from ..parliament.routers.agenda import agenda_router
 from ..app.config import config
 
 # load_dotenv(dotenv_path=".env")
