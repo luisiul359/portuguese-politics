@@ -1,10 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from httpx import AsyncClient
 from parliament.mappers.agenda import map_to_upcoming_events
 from parliament.models.agenda import EventoAgenda
-from parliament.models.legislature import Legislatura
-from parliament.common import current_legislature
 
 
 agenda_router = APIRouter(
