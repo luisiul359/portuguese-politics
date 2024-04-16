@@ -26,7 +26,7 @@ class SessaoAgendaDescricao(str, Enum):
     RELACOES_INTERNACIONAIS = "Relações Internacionais"
     VISITAS_PALACIO_SAO_BENTO = "Visitas ao Palácio de S. Bento"
     ASSISTENCIAS_AO_PLENARIO = "Assistências ao Plenário"
-    GRUPOS_PARLAMENTARES = "Grupos Parlamentares / Partidos / Ninsc"
+    GRUPOS_PARLAMENTARES = "Grupos Parlamentares / Partidos / DURP / Ninsc"
     RESUMO_CALENDARIZACAO = "Resumo da Calendarização"
     GRELHAS_DE_TEMPOS = "Grelhas de Tempos"
 
@@ -50,7 +50,7 @@ class TemaAgendaDescricao(str, Enum):
     ACTIVIDADES_PARLAMENTARES_EXTERNAS = "ACTIVIDADES PARLAMENTARES EXTERNAS"
     OUTRAS_ACTIVIDADES = "OUTRAS ACTIVIDADES"
     RESUMO_CALENDARIZACAO = "Resumo da Calendarização"
-    GRUPOS_PARLAMENTARES = "Grupos Parlamentares / Partidos / Ninsc"
+    GRUPOS_PARLAMENTARES = "Grupos Parlamentares / Partidos / DURP / Ninsc"
     VISITAS_PALACIO_SAO_BENTO = "Visitas ao Palácio de S. Bento"
     ASSISTENCIA_AO_PLENARIO = "Assistências ao Plenário"
 
