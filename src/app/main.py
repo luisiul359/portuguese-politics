@@ -4,7 +4,7 @@ import os
 import sys
 from datetime import date
 from typing import Dict, Optional
-from app.config.exception_handler import ExceptionHandlerMiddleware
+from app.middleware.exception_handler import ExceptionHandlerMiddleware
 import pandas as pd
 import uvicorn as uvicorn
 from azure.storage.blob import BlobServiceClient
