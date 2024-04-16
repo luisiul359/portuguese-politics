@@ -4,6 +4,7 @@ import os
 import sys
 from datetime import date
 from typing import Dict, Optional
+from app.config.exception_handler import ExceptionHandlerMiddleware
 import pandas as pd
 import uvicorn as uvicorn
 from azure.storage.blob import BlobServiceClient
@@ -14,7 +15,7 @@ from src.app.apis import schemas
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
 from ..parliament.routers.agenda import agenda_router
-from ..app.config import config
+from .config.app import app_config
 
 # load_dotenv(dotenv_path=".env")
 
@@ -204,17 +205,17 @@ tags_metadata = [
 ]
 
 
-app = FastAPI(openapi_tags=tags_metadata)
-
+app = FastAPI(openapi_tags=tags_metadata, debug=True)
 parliament_app = FastAPI() #tag parlamento
 parliament_app.include_router(agenda_router)
+parliament_app.add_middleware(ExceptionHandlerMiddleware)
 
 app.mount("/parlamento", parliament_app)
 
 
 @app.on_event("startup")
 async def startup_event():
-    if (config.env == "procution"):
+    if (app_config.env == "production"):
         # The idea is to load all cached data during the app boostrap.
         # In some endpoints due the parameters it is not possible to just
         # filter the cached data and therefore some computation is done,
