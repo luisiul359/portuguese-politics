@@ -27,8 +27,7 @@ PATH_PARLIAMENT_AGENDA_XVI = f"https://app.parlamento.pt/webutils/docs/doc.txt?p
 )
 async def get_agenda() -> list[EventoAgenda]:
     async with AsyncClient() as client:
-        resource_url = select_parliament_resource_url(Legislatura.XVI)
-        response = await client.get(resource_url, timeout=None)
+        response = await client.get(PATH_PARLIAMENT_AGENDA_XVI, timeout=None)
         
         if (response.status_code != 200):
             return JSONResponse({"mensagem": "Erro ao obter dados no parlamento.pt. Por favor tente mais tarde."}, response.status_code)
@@ -36,11 +35,3 @@ async def get_agenda() -> list[EventoAgenda]:
         parliament_data = response.json()
         return map_to_upcoming_events(parliament_data)
 
-
-def select_parliament_resource_url(legislature: Legislatura) -> str:
-    if (legislature == current_legislature):
-        return PATH_PARLIAMENT_AGENDA_XVI
-    raise HTTPException(
-        500,
-        f"A legislatura usada no pedido {legislature.value} não é a actual {current_legislature}. Tem que ser feita uma actualização, pedimos que tente mais tarde."
-    )
