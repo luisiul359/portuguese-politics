@@ -271,7 +271,8 @@ def get_party_approvals(
             "id": autor.lower()
             .replace(" ", "-")
             .replace("cristina-rodrigues", "cr")
-            .replace("joacine-katar-moreira", "jkm"),
+            .replace("joacine-katar-moreira", "jkm")
+            .replace("antónio-maló-de-abreu", "ama"),
             "nome": autor,
             "total_iniciativas": value["total_iniciativas"],
             "total_iniciativas_aprovadas": value["total_iniciativas_aprovadas"],

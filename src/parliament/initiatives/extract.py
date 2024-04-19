@@ -587,7 +587,8 @@ def _split_vote_result(vote: str) -> Dict[str, list]:
         .replace("abstenção:", ",abstenção,")
     )
     vote = vote.replace("cristinarodrigues(ninsc)", "cr").replace(
-        "joacinekatarmoreira(ninsc)", "jkm"
+        "joacinekatarmoreira(ninsc)", "jkm").replace(
+        "antóniomalódeabreu(ninsc)", "ama"
     )
     vote = vote.split(",")
 
@@ -599,7 +600,7 @@ def _split_vote_result(vote: str) -> Dict[str, list]:
         if party in "afavor,contra,ausência,abstenção":
             current_option = party
         else:
-            if party in "ps,psd,be,pcp,cds-pp,pan,pev,ch,il,l,cr,jkm".split(","):
+            if party in "ps,psd,be,pcp,cds-pp,pan,pev,ch,il,l,cr,jkm,ama".split(","):
                 result[current_option].append(party)
             # sometimes deputies vote different from their own party
             else:
@@ -659,6 +660,7 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
                     else:
                         columns_to_store[f"iniciativa_votacao_{party}"] = vote
 
+        if row["iniciativa_votacao_res"]:
             data_initiatives.append(columns_to_store)
 
     data_initiatives = pd.DataFrame(data_initiatives)
