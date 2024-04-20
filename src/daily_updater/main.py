@@ -140,7 +140,7 @@ def run_initiatives(blob_storage_container_client: BlobContainerClient):
 
 
 #@sched.scheduled_job("cron", hour="3", minute="00")
-@sched.scheduled_job("cron", hour="11", minute="35")
+@sched.scheduled_job("cron", hour="20", minute="52")
 def main() -> None:
     utc_timestamp = (
         datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
