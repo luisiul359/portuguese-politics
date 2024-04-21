@@ -6,9 +6,9 @@ authors = ["Luis Silva <luisiul359@gmail.com>"]
 packages = [ ]
 
 [tool.poetry.dependencies]
-python = "~3.9"
+python = "~3.11"
 requests = "~2.31"
-azure-functions = "~1.15"
+azure-functions = "~1.19"
 
 [tool.poetry.dev-dependencies]
 
