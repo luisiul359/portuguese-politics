@@ -36,6 +36,7 @@ class EventPhase(str, Enum):
 class Legislature(str, Enum):
     XIV = "XIV"
     XV = "XV"
+    XVI = "XVI"
 
 
 class Initiative(BaseModel):

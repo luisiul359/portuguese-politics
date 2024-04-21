@@ -64,7 +64,7 @@ blob_storage_container_client = get_blob_container()
 ####################################
 
 
-ALL_LEGISLATURES = ["XIV", "XV"]
+ALL_LEGISLATURES = ["XIV", "XV", "XVI"]
 
 
 def load_party_approvals(
