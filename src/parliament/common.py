@@ -6,6 +6,8 @@ def to_list(x: Union[Any, List]) -> List:
 
 
 def get_most_recent_status(x: Union[Any, List], date_field):
+    if not x: return {"carDes": "not found"}
+
     obj_as_list = to_list(x)
     return list(sorted(obj_as_list, key=lambda x: x[date_field]))[-1]
 
