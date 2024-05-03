@@ -1,5 +1,5 @@
 from typing import Awaitable, Callable
-from fastapi import HTTPException, Request
+from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
@@ -18,11 +18,8 @@ class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
                 return JSONResponse({"mensagem": f"Endpoint: /{request.url.path} não existe."}, response.status_code)
             return response
         except Exception as exception:
-            if (isinstance(exception, HTTPException)):
-                http_exception = exception
-                message = {"mensagem": f"{http_exception.detail}"}
-                print("Error: ", http_exception)
-                return JSONResponse(message, http_exception.status_code)
+            message_error = {"mensagem": f"Erro interno da API, por favor tente mais tarde." }
+            if (isinstance(exception, KeyError)):
+                return JSONResponse(message_error, 500)
             else:
-                print("Error: ", exception)
-                return JSONResponse({"mensagem": f"Erro interno da API, por favor tente mais tarde." }, 500)
+                return JSONResponse(message_error, 500)
