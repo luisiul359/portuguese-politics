@@ -2,7 +2,6 @@ from parliament.mappers.legislature import map_to_legislature
 from parliament.models.agenda import AnexosAgenda, EventoAgenda, SessaoAgenda, TemaAgenda
 
 
-# TODO: mapping is failing with latest requests
 def map_to_upcoming_events(events: any) -> list[EventoAgenda]:
     return [EventoAgenda(
         id=event["Id"],
@@ -37,11 +36,14 @@ def map_to_upcoming_events(events: any) -> list[EventoAgenda]:
 
 
 def map_to_attaches(event: any) -> list[AnexosAgenda] | None:
+    # The fields are not the same as presented in the metadata, link below:
+    # https://app.parlamento.pt/webutils/docs/doc.pdf?path=041obKOV9FSHmwZTiBZj%2bx%2frymn6Gjix8M46ofLcACsEJU7ckopzQr2jpco6jQCmHpXc%2fv7toftUbo%2bQsYrGcqY%2fWFdM5TDglHtfcMQXmi7rrak33hh3xUQnoeTj6t53vHaS7e8VA26i3GH%2f7Ch6J4Quasz9DzkjnarGjBNeGlnePkuZtPWbRyHMYaCXIBj7mcCcFzX8HIWX8oS0MFX4LxcYGGG6G0ATMr2E8DlS3v%2b%2fHd4r5wjzYNaPSvYyzUJMptXNwOM8HCLxwO83TJh5iV5OaQWxZ%2fTLY7UW182KSrIMRDNbGhWyhdtTmKoYyDzH97V5nvnUIwJUMhVgMTDR4LQJtwIaQ%2fq%2bJlsUuey7Jkb6c8Z4hRpN7%2bHlOZuR%2bXUdHrHDSKUKyrR9UUm9YPHht5YSzCw1%2boFaueeNuCt%2bodA%3d&fich=Defini%c3%a7%c3%a3o+da+estrutura+dos+ficheiros.pdf&Inline=true
+    # They were changed on the XVI legislature and updated accordingly
     if (event):
         return [AnexosAgenda(
-        id=attach["idField"],
-        tipoDocumento=attach["tipoDocumentoField"],
-        titulo=attach["tituloField"],
-        link=attach["uRLField"]
+        id=attach["id"],
+        tipoDocumento=attach["TipoDocumento"],
+        titulo=attach["Titulo"],
+        link=attach["URL"]
         ) for attach in event]
     return None
