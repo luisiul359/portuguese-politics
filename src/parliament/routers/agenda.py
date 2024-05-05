@@ -3,7 +3,7 @@ from httpx import AsyncClient
 from parliament.mappers.agenda import map_to_upcoming_events
 from parliament.models.agenda import EventoAgenda
 from parliament.models.legislature import Legislatura
-from parliament.constants import current_legislature
+from parliament.common import current_legislature
 
 
 router = APIRouter(
