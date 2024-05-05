@@ -14,7 +14,7 @@ from src.app.apis import schemas
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
 from src.parliament.deputies.router import router as deputies_router
-from src.parliament.routers.agenda import router as agenda_router
+from src.parliament.routers.agenda import agenda_router
 from src.app.config import config
 
 # load_dotenv(dotenv_path=".env")
