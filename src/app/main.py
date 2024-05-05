@@ -24,9 +24,9 @@ handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
 
 
-# #########################
-# ##### Load clients  #####
-# #########################
+#########################
+##### Load clients  #####
+#########################
 
 
 def get_blob_container() -> BlobContainerClient:
@@ -60,9 +60,9 @@ def get_blob_container() -> BlobContainerClient:
 blob_storage_container_client = get_blob_container()
 
 
-# ####################################
-# ##### Load things into memory  #####
-# ####################################
+####################################
+##### Load things into memory  #####
+####################################
 
 
 ALL_LEGISLATURES = ["XIV", "XV", "XVI"]
@@ -189,9 +189,9 @@ def load_data():
     ) = extract_legislativas_2019()
 
 
-# ######################
-# ##### Endpoints  #####
-# ######################
+######################
+##### Endpoints  #####
+######################
 
 
 # Create FastAPI client
@@ -280,7 +280,8 @@ def get_party_approvals(
             "id": autor.lower()
             .replace(" ", "-")
             .replace("cristina-rodrigues", "cr")
-            .replace("joacine-katar-moreira", "jkm"),
+            .replace("joacine-katar-moreira", "jkm")
+            .replace("antónio-maló-de-abreu", "ama"),
             "nome": autor,
             "total_iniciativas": value["total_iniciativas"],
             "total_iniciativas_aprovadas": value["total_iniciativas_aprovadas"],
