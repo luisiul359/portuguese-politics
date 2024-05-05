@@ -9,7 +9,7 @@ import pandas as pd
 import uvicorn as uvicorn
 from azure.storage.blob import BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from src.app.apis import schemas
@@ -17,8 +17,9 @@ from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
 from src.parliament.deputies.router import router as deputies_router
 from src.parliament.routers.agenda import router as agenda_router
+from src.app.config import config
 
-# load_dotenv(dotenv_path=".env")
+load_dotenv(dotenv_path=".env")
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
@@ -66,7 +67,7 @@ blob_storage_container_client = get_blob_container()
 ####################################
 
 
-ALL_LEGISLATURES = ["XIV", "XV", "XVI"]
+# ALL_LEGISLATURES = ["XIV", "XV"]
 
 
 def load_party_approvals(
@@ -117,16 +118,16 @@ def load_initiative_votes(
     return df
 
 
-def load_legislatures_fields(
-    legislature: str, container_client: BlobContainerClient
-) -> Dict:
-    """
-    Load initiative votes of a certain legislature from Blob Storage
-    """
+# def load_legislatures_fields(
+#     legislature: str, container_client: BlobContainerClient
+# ) -> Dict:
+#     """
+#     Load initiative votes of a certain legislature from Blob Storage
+#     """
 
-    data = container_client.get_blob_client(f"{legislature}_legislatures.json")
+#     data = container_client.get_blob_client(f"{legislature}_legislatures.json")
 
-    return json.loads(data.download_blob().readall())
+#     return json.loads(data.download_blob().readall())
 
 
 party_approvals = None
@@ -196,18 +197,16 @@ def load_data():
 
 
 # Create FastAPI client
-def create_app() -> FastAPI:
-
-    tags_metadata = [
-        {
-            "name": "Parlamento",
-            "description": "Informação relativa à Assembleia da República Portuguesa e trabalhos no Parlamento.",
-        },
-        {
-            "name": "Eleições",
-            "description": "Resultados de eleições portuguesas.",
-        },
-    ]
+tags_metadata = [
+    {
+        "name": "Parlamento",
+        "description": "Informação relativa à Assembleia da República e trabalhos no Parlamento Português.",
+    },
+    {
+        "name": "Elections",
+        "description": "Information from Portuguese previous elections.",
+    },
+]
 
     app = FastAPI(openapi_tags=tags_metadata)
 
@@ -222,13 +221,14 @@ def create_app() -> FastAPI:
 app = create_app()
 
 
-# @app.on_event("startup")
-# async def startup_event():
-#     # The idea is to load all cached data during the app boostrap.
-#     # In some endpoints due the parameters it is not possible to just
-#     # filter the cached data and therefore some computation is done,
-#     # meaning slower responses.
-#     load_data()
+@app.on_event("startup")
+async def startup_event():
+    if (config.env == "procution"):
+        # The idea is to load all cached data during the app boostrap.
+        # In some endpoints due the parameters it is not possible to just
+        # filter the cached data and therefore some computation is done,
+        # meaning slower responses.
+        load_data()
 
 
 @app.get("/parliament/party-approvals", tags=["Parlamento"])
@@ -517,4 +517,3 @@ def update():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
