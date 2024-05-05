@@ -15,6 +15,7 @@ from fastapi import FastAPI
 from src.app.apis import schemas
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
+from src.parliament.deputies.router import router as deputies_router
 
 # load_dotenv(dotenv_path=".env")
 
@@ -23,9 +24,9 @@ handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
 
 
-#########################
-##### Load clients  #####
-#########################
+# #########################
+# ##### Load clients  #####
+# #########################
 
 
 def get_blob_container() -> BlobContainerClient:
@@ -59,9 +60,9 @@ def get_blob_container() -> BlobContainerClient:
 blob_storage_container_client = get_blob_container()
 
 
-####################################
-##### Load things into memory  #####
-####################################
+# ####################################
+# ##### Load things into memory  #####
+# ####################################
 
 
 ALL_LEGISLATURES = ["XIV", "XV", "XVI"]
@@ -188,25 +189,36 @@ def load_data():
     ) = extract_legislativas_2019()
 
 
-######################
-##### Endpoints  #####
-######################
+# ######################
+# ##### Endpoints  #####
+# ######################
 
 
 # Create FastAPI client
-tags_metadata = [
-    {
-        "name": "Parliament",
-        "description": "Information from Portuguese Parliament API.",
-    },
-    {
-        "name": "Elections",
-        "description": "Information from Portuguese previous elections.",
-    },
-]
+def create_app() -> FastAPI:
 
+    tags_metadata = [
+        {
+            "name": "Parlamento",
+            "description": "Informação relativa à Assembleia da República Portuguesa e trabalhos no Parlamento.",
+        },
+        {
+            "name": "Eleições",
+            "description": "Resultados de eleições portuguesas.",
+        },
+    ]
 
-app = FastAPI(openapi_tags=tags_metadata)
+    app = FastAPI(openapi_tags=tags_metadata)
+
+    # Create API v2
+    parliament_app = FastAPI()
+    parliament_app.include_router(deputies_router, prefix="/parlamento")
+
+    app.mount("/v2", parliament_app)
+
+    return app
+
+app = create_app()
 
 
 @app.on_event("startup")
@@ -218,10 +230,7 @@ async def startup_event():
     load_data()
 
 
-@app.get(
-    "/parliament/party-approvals",
-    tags=["Parliament"],
-)
+@app.get("/parliament/party-approvals", tags=["Parlamento"])
 def get_party_approvals(
     legislature: schemas.Legislature = schemas.Legislature.XV,
     event_phase: schemas.EventPhase = schemas.EventPhase.GENERALIDADE,
@@ -271,8 +280,7 @@ def get_party_approvals(
             "id": autor.lower()
             .replace(" ", "-")
             .replace("cristina-rodrigues", "cr")
-            .replace("joacine-katar-moreira", "jkm")
-            .replace("antónio-maló-de-abreu", "ama"),
+            .replace("joacine-katar-moreira", "jkm"),
             "nome": autor,
             "total_iniciativas": value["total_iniciativas"],
             "total_iniciativas_aprovadas": value["total_iniciativas_aprovadas"],
@@ -289,10 +297,7 @@ def get_party_approvals(
     return {"autores": approvals}
 
 
-@app.get(
-    "/parliament/party-correlations",
-    tags=["Parliament"],
-)
+@app.get("/parliament/party-correlations", tags=["Parlamento"])
 def get_party_correlations(
     legislature: schemas.Legislature = schemas.Legislature.XV,
     event_phase: schemas.EventPhase = schemas.EventPhase.GENERALIDADE,
@@ -350,7 +355,7 @@ def get_party_correlations(
     return {"partido": res}
 
 
-@app.get("/parliament/initiatives", tags=["Parliament"])
+@app.get("/parliament/initiatives", tags=["Parlamento"])
 def get_initiatives(
     legislature: schemas.Legislature = schemas.Legislature.XV,
     event_phase: schemas.EventPhase = schemas.EventPhase.GENERALIDADE,
@@ -419,7 +424,7 @@ def get_initiatives(
     return {"initiativas": res}
 
 
-@app.get("/parliament/legislatures", tags=["Parliament"])
+@app.get("/parliament/legislatures", tags=["Parlamento"])
 def get_legislatures(
     legislature: schemas.Legislature = schemas.Legislature.XV,
 ):
@@ -429,7 +434,7 @@ def get_legislatures(
     return legislature_fields[legislature.value]
 
 
-@app.get("/elections/parties", tags=["Elections"])
+@app.get("/elections/parties", tags=["Eleições"])
 def get_elections_parties(
     type: Optional[str] = "Legislativas", year: Optional[int] = 2019
 ):  # -> schemas.PartiesOut: ## TODO: it is not working
@@ -442,7 +447,7 @@ def get_elections_parties(
     return {"parties": json.loads(parties_legislatives_2019.to_json(orient="index"))}
 
 
-@app.get("/elections/candidates", tags=["Elections"])
+@app.get("/elections/candidates", tags=["Eleições"])
 def get_party_candidates(
     party: Optional[str],
     type: Optional[str] = "Legislativas",
@@ -465,7 +470,7 @@ def get_party_candidates(
     }
 
 
-@app.get("/elections/candidates-district", tags=["Elections"])
+@app.get("/elections/candidates-district", tags=["Eleições"])
 def get_district_candidates(
     district: str,
     type: Optional[str] = "Legislativas",
@@ -510,3 +515,4 @@ def update():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
