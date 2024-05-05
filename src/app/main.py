@@ -4,6 +4,7 @@ import os
 import sys
 from datetime import date
 from typing import Dict, Optional
+from app.config.exception_handler import ExceptionHandlerMiddleware
 import pandas as pd
 import uvicorn as uvicorn
 from azure.storage.blob import BlobServiceClient
@@ -15,7 +16,7 @@ from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
 from src.parliament.deputies.router import router as deputies_router
 from src.parliament.routers.agenda import agenda_router
-from src.app.config import config
+from src.app.config import app_config
 
 # load_dotenv(dotenv_path=".env")
 
@@ -65,7 +66,7 @@ blob_storage_container_client = get_blob_container()
 ####################################
 
 
-# ALL_LEGISLATURES = ["XIV", "XV"]
+ALL_LEGISLATURES = ["XIV", "XV"]
 
 
 def load_party_approvals(
@@ -206,22 +207,20 @@ tags_metadata = [
     },
 ]
 
-    app = FastAPI(openapi_tags=tags_metadata)
+app = FastAPI(openapi_tags=tags_metadata)
 
-    parliament_app = FastAPI() #tag parlamento
-    parliament_app.include_router(deputies_router, prefix="/parlamento")
-    parliament_app.include_router(agenda_router, prefix="/parlamento")
+parliament_app = FastAPI() #tag parlamento
+parliament_app.include_router(deputies_router)
+parliament_app.include_router(agenda_router)
+parliament_app.add_middleware(ExceptionHandlerMiddleware)
 
-    app.mount("/v2", parliament_app)
 
-    return app
-
-app = create_app()
+app.mount("/parlamento", parliament_app)
 
 
 @app.on_event("startup")
 async def startup_event():
-    if (config.env == "procution"):
+    if (app_config.env == "production"):
         # The idea is to load all cached data during the app boostrap.
         # In some endpoints due the parameters it is not possible to just
         # filter the cached data and therefore some computation is done,

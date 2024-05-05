@@ -15,4 +15,4 @@ class Configuration(BaseSettings):
     app_name: str = "Portuguese Politics API"
 
 
-config = Configuration()
+app_config = Configuration()
