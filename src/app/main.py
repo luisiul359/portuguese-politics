@@ -9,7 +9,7 @@ import pandas as pd
 import uvicorn as uvicorn
 from azure.storage.blob import BlobServiceClient
 from azure.storage.blob import ContainerClient as BlobContainerClient
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from src.app.apis import schemas
@@ -19,7 +19,7 @@ from src.parliament.deputies.router import router as deputies_router
 from src.parliament.routers.agenda import router as agenda_router
 from src.app.config import config
 
-load_dotenv(dotenv_path=".env")
+# load_dotenv(dotenv_path=".env")
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
@@ -118,16 +118,16 @@ def load_initiative_votes(
     return df
 
 
-# def load_legislatures_fields(
-#     legislature: str, container_client: BlobContainerClient
-# ) -> Dict:
-#     """
-#     Load initiative votes of a certain legislature from Blob Storage
-#     """
-
-#     data = container_client.get_blob_client(f"{legislature}_legislatures.json")
-
-#     return json.loads(data.download_blob().readall())
+def load_legislatures_fields(
+    legislature: str, container_client: BlobContainerClient
+) -> Dict:
+    """
+    Load initiative votes of a certain legislature from Blob Storage
+    """
+    print("PRE-DOWNLOAD")
+    data = container_client.get_blob_client(f"{legislature}_legislatures.json")
+    print(">>>>>>>", data)
+    return json.loads(data.download_blob().readall())
 
 
 party_approvals = None
