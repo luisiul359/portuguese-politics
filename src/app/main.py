@@ -17,8 +17,8 @@ from src.app.middleware.exception_handler import ExceptionHandlerMiddleware
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
 from src.parliament.deputies.router import router as deputies_router
-from parliament.router.agenda import agenda_router
-from config.app import app_config
+from src.app.parliament.router.agenda import agenda_router
+from src.app.config.app import app_config
 
 
 # load_dotenv(dotenv_path=".env")
