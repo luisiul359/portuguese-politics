@@ -20,6 +20,7 @@ from src.parliament.deputies.router import router as deputies_router
 from parliament.router.agenda import agenda_router
 from config.app import app_config
 
+
 # load_dotenv(dotenv_path=".env")
 
 logger = logging.getLogger(__name__)

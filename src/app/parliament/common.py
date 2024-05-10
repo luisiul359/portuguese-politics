@@ -1,4 +1,4 @@
-from parliament.models.legislature import Legislatura
+from .model.legislature import Legislatura
 
 
 supported_legislatures = [Legislatura.XIV, Legislatura.XV, Legislatura.XVI]

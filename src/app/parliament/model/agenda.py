@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional
-from parliament.model.legislature import Legislatura
+from .legislature import Legislatura
 from pydantic import BaseModel
 
 
