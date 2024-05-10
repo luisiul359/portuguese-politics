@@ -13,8 +13,11 @@ from azure.storage.blob import ContainerClient as BlobContainerClient
 from fastapi import FastAPI
 
 from src.app.apis import schemas
+from src.app.middleware.exception_handler import ExceptionHandlerMiddleware
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
+from parliament.router.agenda import agenda_router
+from config.app import app_config
 
 # load_dotenv(dotenv_path=".env")
 
@@ -196,26 +199,34 @@ def load_data():
 # Create FastAPI client
 tags_metadata = [
     {
-        "name": "Parliament",
-        "description": "Information from Portuguese Parliament API.",
+        "name": "Parlamento",
+        "description": "Informação relativa à Assembleia da República e trabalhos no Parlamento Português.",
     },
     {
-        "name": "Elections",
-        "description": "Information from Portuguese previous elections.",
+        "name": "Eleições",
+        "description": "Informação das eleições em Portugal.",
     },
 ]
 
 
 app = FastAPI(openapi_tags=tags_metadata)
 
+parliament_app = FastAPI() #tag parlamento
+parliament_app.include_router(agenda_router)
+parliament_app.add_middleware(ExceptionHandlerMiddleware)
 
+app.mount("/parlamento", parliament_app)
+
+
+# TODO: Deprecated
 @app.on_event("startup")
 async def startup_event():
-    # The idea is to load all cached data during the app boostrap.
-    # In some endpoints due the parameters it is not possible to just
-    # filter the cached data and therefore some computation is done,
-    # meaning slower responses.
-    load_data()
+    if (app_config.env == "production"):
+        # The idea is to load all cached data during the app boostrap.
+        # In some endpoints due the parameters it is not possible to just
+        # filter the cached data and therefore some computation is done,
+        # meaning slower responses.
+        load_data()
 
 
 @app.get(
