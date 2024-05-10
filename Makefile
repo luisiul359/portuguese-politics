@@ -15,6 +15,7 @@ init:
 	poetry install
 
 runlocal:
+	docker compose up -d
 	poetry run uvicorn src.app.main:app --reload --env-file .env
 
 run:
