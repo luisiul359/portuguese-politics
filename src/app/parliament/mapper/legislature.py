@@ -1,4 +1,4 @@
-from parliament.common import current_legislature
+from ..common import current_legislature
 from src.app.parliament.model.legislature import Legislatura
 
 
