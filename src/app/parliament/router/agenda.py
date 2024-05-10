@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from httpx import AsyncClient
-from ..mapper.agenda import map_to_upcoming_events
-from ..model.agenda import EventoAgenda
+from src.app.parliament.mapper.agenda import map_to_upcoming_events
+from src.app.parliament.model.agenda import EventoAgenda
 
 
 agenda_router = APIRouter(

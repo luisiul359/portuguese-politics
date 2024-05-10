@@ -1,4 +1,4 @@
-from .model.legislature import Legislatura
+from src.app.parliament.model.legislature import Legislatura
 
 
 supported_legislatures = [Legislatura.XIV, Legislatura.XV, Legislatura.XVI]

@@ -1,5 +1,5 @@
-from ..mapper.legislature import map_to_legislature
-from ..model.agenda import AnexosAgenda, EventoAgenda, SessaoAgenda, TemaAgenda
+from src.app.parliament.mapper.legislature import map_to_legislature
+from src.app.parliament.model.agenda import AnexosAgenda, EventoAgenda, SessaoAgenda, TemaAgenda
 
 
 def map_to_upcoming_events(events: any) -> list[EventoAgenda]:
