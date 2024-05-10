@@ -25,6 +25,7 @@ tzlocal = "^5.2"
 apscheduler = "~3.10"
 python-dotenv = "~1.0"
 email-validator = "^2.1.0"
+pydantic-settings = "^2.2.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "~8.1"
