@@ -1,13 +1,8 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from httpx import AsyncClient
-<<<<<<< HEAD
-from ..mapper.agenda import map_to_upcoming_events
-from ..model.agenda import EventoAgenda
-=======
 from src.app.parliament.mapper.agenda import map_to_upcoming_events
 from src.app.parliament.model.agenda import EventoAgenda
->>>>>>> branch 'add-agenda' of git@github.com:luisiul359/portuguese-politics.git
 
 
 agenda_router = APIRouter(
