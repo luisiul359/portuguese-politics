@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from ..common import current_legislature
+=======
+from src.app.parliament.common import current_legislature
+>>>>>>> branch 'add-agenda' of git@github.com:luisiul359/portuguese-politics.git
 from src.app.parliament.model.legislature import Legislatura
 
 

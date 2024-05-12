@@ -1,6 +1,10 @@
 from enum import Enum
 from typing import Optional
+<<<<<<< HEAD
 from .legislature import Legislatura
+=======
+from src.app.parliament.model.legislature import Legislatura
+>>>>>>> branch 'add-agenda' of git@github.com:luisiul359/portuguese-politics.git
 from pydantic import BaseModel
 
 
