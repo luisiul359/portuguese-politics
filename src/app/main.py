@@ -16,8 +16,8 @@ from src.app.apis import schemas
 from src.app.middleware.exception_handler import ExceptionHandlerMiddleware
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
-from .parliament.router.agenda import agenda_router
-from .config.app import app_config
+from app.parliament.router.agenda import agenda_router
+from app.config.app import app_config
 
 # load_dotenv(dotenv_path=".env")
 
@@ -221,7 +221,7 @@ app.mount("/parlamento", parliament_app)
 # TODO: Deprecated
 @app.on_event("startup")
 async def startup_event():
-    if (app_config.env == "production"):
+    if (app_config.env == "prod"):
         # The idea is to load all cached data during the app boostrap.
         # In some endpoints due the parameters it is not possible to just
         # filter the cached data and therefore some computation is done,
