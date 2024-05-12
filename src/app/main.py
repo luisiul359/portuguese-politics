@@ -16,15 +16,8 @@ from src.app.apis import schemas
 from src.app.middleware.exception_handler import ExceptionHandlerMiddleware
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
-<<<<<<< HEAD
 from app.parliament.router.agenda import agenda_router
 from app.config.app import app_config
-=======
-from src.parliament.deputies.router import router as deputies_router
-from src.app.parliament.router.agenda import agenda_router
-from src.app.config.app import app_config
-
->>>>>>> branch 'add-agenda' of git@github.com:luisiul359/portuguese-politics.git
 
 # load_dotenv(dotenv_path=".env")
 
