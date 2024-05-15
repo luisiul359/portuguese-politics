@@ -88,7 +88,10 @@ def get_party_correlations(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame
             if len(indexes) == 0:
                 res[party_a].append(0)
             else:
+                options = ["afavor", "contra", "abstenção", "All"]
                 corr = pd.crosstab(pa[indexes], pb[indexes], margins=True)
+                # ensure rows and columns are complete
+                corr = corr.reindex(index=options, columns=options, fill_value=0)
                 diag = np.diag(corr)
 
                 total = diag[-1]
