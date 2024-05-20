@@ -4,6 +4,7 @@ import os
 import sys
 from datetime import date
 from typing import Dict, Optional
+from copy import deepcopy
 
 import pandas as pd
 import uvicorn as uvicorn
@@ -264,6 +265,11 @@ def get_party_approvals(
             event_phase.value
         ].to_json(orient="index")
 
+    all_parties_names = [
+        party["nome"] for party in 
+        legislature_fields[legislature.value]["partidos"]
+    ]
+
     # transform to the expected schema
     approvals = []
     for autor, value in json.loads(_party_approvals).items():
@@ -284,7 +290,33 @@ def get_party_approvals(
             if k.startswith("iniciativa_votacao_")
         }
 
+        if autor in all_parties_names:
+            all_parties_names.remove(autor)
+
         approvals.append(data)
+
+    # it means some parties still did not present any initiative
+    if all_parties_names:
+        for party in all_parties_names:
+            example = deepcopy(data)
+
+            example["id"] = party.lower().\
+                replace(" ", "-").\
+                replace("cristina-rodrigues", "cr").\
+                replace("joacine-katar-moreira", "jkm").\
+                replace("antónio-maló-de-abreu", "ama")
+            example["nome"] = party
+            example["total_iniciativas"] = 0
+            example["total_iniciativas_aprovadas"] = 0
+
+            example["aprovacoes"] = {
+                k: 0
+                for k in data["aprovacoes"].keys()
+            }
+
+            example["aprovacoes"][party.lower()] = 1
+
+            approvals.append(example)
 
     return {"autores": approvals}
 
