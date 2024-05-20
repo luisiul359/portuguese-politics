@@ -314,8 +314,6 @@ def get_party_approvals(
                 for k in data["aprovacoes"].keys()
             }
 
-            example["aprovacoes"][party.lower()] = 1
-
             approvals.append(example)
 
     return {"autores": approvals}
