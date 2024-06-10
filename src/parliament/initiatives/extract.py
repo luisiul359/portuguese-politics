@@ -289,6 +289,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
             info_to_store_details["iniciativa_evento_fase"] = event.get("fase", "")
             info_to_store_details["iniciativa_evento_data"] = event.get("dataFase", "")
             info_to_store_details["iniciativa_evento_id"] = event.get("evtId", "")
+            info_to_store_details["iniciativa_evento_obsFase"] = event.get("obsFase", "")
 
             publicacao_detalhe = to_list(
                 event.get("publicacaoFase", {}).get(
@@ -663,6 +664,12 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
                             columns_to_store[k] = party
                     else:
                         columns_to_store[f"iniciativa_votacao_{party}"] = vote
+
+        if row["iniciativa_evento_obsFase"]:
+            if columns_to_keep["iniciativa_votacao_desc"]:
+                columns_to_keep["iniciativa_votacao_desc"] += f'| {row["iniciativa_evento_obsFase"]}'
+            else:
+                columns_to_keep["iniciativa_votacao_desc"] = row["iniciativa_evento_obsFase"]
 
         if row["iniciativa_votacao_res"]:
             data_initiatives.append(columns_to_store)

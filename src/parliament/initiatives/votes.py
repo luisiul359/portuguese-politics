@@ -168,7 +168,7 @@ def get_initiatives(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     parties_vote_direction_fields = [
         x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")
     ]
-    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra iniciativa_votacao_outros_ausência iniciativa_votacao_unanime".split()
+    to_exclude = "iniciativa_votacao_res iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra iniciativa_votacao_outros_ausência iniciativa_votacao_unanime".split()
     parties_vote_direction_fields = list(
         set(parties_vote_direction_fields) - set(to_exclude)
     )
