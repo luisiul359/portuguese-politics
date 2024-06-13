@@ -8,14 +8,13 @@ SHELL=/bin/bash
 
 # This will install the package manager Poetry
 setup:
-	curl -sSL https://install.python-poetry.org | python3 -
+	curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | ${PYTHON} -
 	@echo "Done."
 
 init:
 	poetry install
 
 runlocal:
-	docker compose up -d
 	poetry run uvicorn src.app.main:app --reload --env-file .env
 
 run:

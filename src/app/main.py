@@ -14,12 +14,8 @@ from azure.storage.blob import ContainerClient as BlobContainerClient
 from fastapi import FastAPI
 
 from src.app.apis import schemas
-from src.app.middleware.exception_handler import ExceptionHandlerMiddleware
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
-from src.app.parliament.router.agenda import agenda_router
-from src.app.config.app import app_config, Env
-
 
 # load_dotenv(dotenv_path=".env")
 
@@ -201,36 +197,32 @@ def load_data():
 # Create FastAPI client
 tags_metadata = [
     {
-        "name": "Parlamento",
-        "description": "Informação relativa à Assembleia da República Portuguesa e trabalhos no Parlamento.",
+        "name": "Parliament",
+        "description": "Information from Portuguese Parliament API.",
     },
     {
-        "name": "Eleições",
-        "description": "Resultados de eleições portuguesas.",
+        "name": "Elections",
+        "description": "Information from Portuguese previous elections.",
     },
 ]
 
+
 app = FastAPI(openapi_tags=tags_metadata)
-parliament_app = FastAPI() #tag parlamento
-
-parliament_app.include_router(agenda_router)
-parliament_app.add_middleware(ExceptionHandlerMiddleware)
-
-app.mount("/parlamento", parliament_app)
 
 
-# TODO: Deprecated
 @app.on_event("startup")
 async def startup_event():
-    if (app_config.env == Env.PROD):
-        # The idea is to load all cached data during the app boostrap.
-        # In some endpoints due the parameters it is not possible to just
-        # filter the cached data and therefore some computation is done,
-        # meaning slower responses.
-        load_data()
+    # The idea is to load all cached data during the app boostrap.
+    # In some endpoints due the parameters it is not possible to just
+    # filter the cached data and therefore some computation is done,
+    # meaning slower responses.
+    load_data()
 
 
-@app.get("/parliament/party-approvals", tags=["Parlamento"])
+@app.get(
+    "/parliament/party-approvals",
+    tags=["Parliament"],
+)
 def get_party_approvals(
     legislature: schemas.Legislature = schemas.Legislature.XV,
     event_phase: schemas.EventPhase = schemas.EventPhase.GENERALIDADE,
@@ -327,7 +319,10 @@ def get_party_approvals(
     return {"autores": approvals}
 
 
-@app.get("/parliament/party-correlations", tags=["Parlamento"])
+@app.get(
+    "/parliament/party-correlations",
+    tags=["Parliament"],
+)
 def get_party_correlations(
     legislature: schemas.Legislature = schemas.Legislature.XV,
     event_phase: schemas.EventPhase = schemas.EventPhase.GENERALIDADE,
@@ -385,7 +380,7 @@ def get_party_correlations(
     return {"partido": res}
 
 
-@app.get("/parliament/initiatives", tags=["Parlamento"])
+@app.get("/parliament/initiatives", tags=["Parliament"])
 def get_initiatives(
     legislature: schemas.Legislature = schemas.Legislature.XV,
     event_phase: schemas.EventPhase = schemas.EventPhase.GENERALIDADE,
@@ -454,7 +449,7 @@ def get_initiatives(
     return {"initiativas": res}
 
 
-@app.get("/parliament/legislatures", tags=["Parlamento"])
+@app.get("/parliament/legislatures", tags=["Parliament"])
 def get_legislatures(
     legislature: schemas.Legislature = schemas.Legislature.XV,
 ):
@@ -464,7 +459,7 @@ def get_legislatures(
     return legislature_fields[legislature.value]
 
 
-@app.get("/elections/parties", tags=["Eleições"])
+@app.get("/elections/parties", tags=["Elections"])
 def get_elections_parties(
     type: Optional[str] = "Legislativas", year: Optional[int] = 2019
 ):  # -> schemas.PartiesOut: ## TODO: it is not working
@@ -477,7 +472,7 @@ def get_elections_parties(
     return {"parties": json.loads(parties_legislatives_2019.to_json(orient="index"))}
 
 
-@app.get("/elections/candidates", tags=["Eleições"])
+@app.get("/elections/candidates", tags=["Elections"])
 def get_party_candidates(
     party: Optional[str],
     type: Optional[str] = "Legislativas",
@@ -500,7 +495,7 @@ def get_party_candidates(
     }
 
 
-@app.get("/elections/candidates-district", tags=["Eleições"])
+@app.get("/elections/candidates-district", tags=["Elections"])
 def get_district_candidates(
     district: str,
     type: Optional[str] = "Legislativas",
@@ -545,4 +540,3 @@ def update():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
