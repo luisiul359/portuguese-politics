@@ -16,8 +16,9 @@ from src.app.apis import schemas
 from src.app.middleware.exception_handler import ExceptionHandlerMiddleware
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
-from app.parliament.router.agenda import agenda_router
-from app.config.app import app_config
+from src.app.parliament.router.agenda import agenda_router
+from src.app.config.app import app_config, Env
+
 
 # load_dotenv(dotenv_path=".env")
 
@@ -197,67 +198,30 @@ def load_data():
 
 
 # Create FastAPI client
-<<<<<<< HEAD
 tags_metadata = [
     {
         "name": "Parlamento",
-        "description": "Informação relativa à Assembleia da República e trabalhos no Parlamento Português.",
+        "description": "Informação relativa à Assembleia da República Portuguesa e trabalhos no Parlamento.",
     },
     {
         "name": "Eleições",
-        "description": "Informação das eleições em Portugal.",
+        "description": "Resultados de eleições portuguesas.",
     },
 ]
-=======
-def create_app() -> FastAPI:
 
-    tags_metadata = [
-        {
-            "name": "Parlamento",
-            "description": "Informação relativa à Assembleia da República Portuguesa e trabalhos no Parlamento.",
-        },
-        {
-            "name": "Eleições",
-            "description": "Resultados de eleições portuguesas.",
-        },
-    ]
-
-    app = FastAPI(openapi_tags=tags_metadata)
-
-    # Create API v2
-    parliament_app = FastAPI()
-    parliament_app.include_router(deputies_router, prefix="/parlamento")
-    parliament_app.include_router(agenda_router)
-    parliament_app.add_middleware(ExceptionHandlerMiddleware)
-
-    app.mount("/v2", parliament_app)
-
-    return app
-
-app = create_app()
->>>>>>> branch 'add-agenda' of git@github.com:luisiul359/portuguese-politics.git
-
-
-<<<<<<< HEAD
 app = FastAPI(openapi_tags=tags_metadata)
-
 parliament_app = FastAPI() #tag parlamento
+
 parliament_app.include_router(agenda_router)
 parliament_app.add_middleware(ExceptionHandlerMiddleware)
 
 app.mount("/parlamento", parliament_app)
 
 
-=======
->>>>>>> branch 'add-agenda' of git@github.com:luisiul359/portuguese-politics.git
 # TODO: Deprecated
 @app.on_event("startup")
 async def startup_event():
-<<<<<<< HEAD
-    if (app_config.env == "prod"):
-=======
-    if (app_config.env == "production"):
->>>>>>> branch 'add-agenda' of git@github.com:luisiul359/portuguese-politics.git
+    if (app_config.env == Env.PROD):
         # The idea is to load all cached data during the app boostrap.
         # In some endpoints due the parameters it is not possible to just
         # filter the cached data and therefore some computation is done,
