@@ -1,3 +1,4 @@
+# endpoints updated daily
 # XIV Legislatura
 from collections import defaultdict
 from dataclasses import dataclass
