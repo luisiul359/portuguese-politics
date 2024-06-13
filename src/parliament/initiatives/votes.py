@@ -88,7 +88,10 @@ def get_party_correlations(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame
             if len(indexes) == 0:
                 res[party_a].append(0)
             else:
+                options = ["afavor", "contra", "abstenção", "All"]
                 corr = pd.crosstab(pa[indexes], pb[indexes], margins=True)
+                # ensure rows and columns are complete
+                corr = corr.reindex(index=options, columns=options, fill_value=0)
                 diag = np.diag(corr)
 
                 total = diag[-1]
@@ -106,12 +109,16 @@ def get_party_correlations(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame
 def collect_parties_strange_votes(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     """
     Return all entries where the party did not approve its own initiatives.
+
     In the following situations a party can vote different from approve its
     own initiatives:
+
     * In Portugal parties with just 1 deputy can't attend commissions where some topics
     are discussed and voted, even when the initiative its from that party.
+
     * When the final document is the merge of similar initiatives and the party
     does not agree with that final document
+
     * In Portugal the deputies must vote equal to the party, but in some situations
     they can vote independently, in those situations we are filling the columns
     "iniciativa_votacao_outros_*" and not the party column
@@ -161,7 +168,7 @@ def get_initiatives(data_initiatives_votes: pd.DataFrame) -> pd.DataFrame:
     parties_vote_direction_fields = [
         x for x in data_initiatives_votes.columns if x.startswith("iniciativa_votacao")
     ]
-    to_exclude = "iniciativa_votacao_res iniciativa_votacao_desc iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra iniciativa_votacao_outros_ausência iniciativa_votacao_unanime".split()
+    to_exclude = "iniciativa_votacao_res iniciativa_votacao_outros_afavor iniciativa_votacao_outros_abstenção iniciativa_votacao_outros_contra iniciativa_votacao_outros_ausência iniciativa_votacao_unanime".split()
     parties_vote_direction_fields = list(
         set(parties_vote_direction_fields) - set(to_exclude)
     )
