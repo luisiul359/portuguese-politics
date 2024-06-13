@@ -189,7 +189,7 @@ def _get_author_deputy(initiative: pd.Series) -> str:
 def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
     """
     Parse parlamento API and return the main information of each initiative.
-    
+
     Will return a raw version, i.e., a wide range of information that needs to be further parsed.
     """
 
@@ -289,6 +289,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
             info_to_store_details["iniciativa_evento_fase"] = event.get("fase", "")
             info_to_store_details["iniciativa_evento_data"] = event.get("dataFase", "")
             info_to_store_details["iniciativa_evento_id"] = event.get("evtId", "")
+            info_to_store_details["iniciativa_evento_obsFase"] = event.get("obsFase", "")
 
             publicacao_detalhe = to_list(
                 event.get("publicacaoFase", {}).get(
@@ -395,10 +396,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
                         [
                             "|".join(
                                 [
-                                    x.get("link", "")BlobContainerClient
-from tqdm import tqdm
-
-from src.parliament.common import MyDict, to_list
+                                    x.get("link", "")
                                     for x in to_list(
                                         MyDict(orador)
                                         .get("linkVideo", {})
@@ -572,7 +570,7 @@ from src.parliament.common import MyDict, to_list
 def _split_vote_result(vote: str) -> Dict[str, list]:
     """
     Extract vote result from poll
-    
+
     Return a dicionary with a list of parties for each poll option
     """
 
@@ -666,6 +664,12 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
                             columns_to_store[k] = party
                     else:
                         columns_to_store[f"iniciativa_votacao_{party}"] = vote
+
+        if row["iniciativa_evento_obsFase"]:
+            if columns_to_keep["iniciativa_votacao_desc"]:
+                columns_to_keep["iniciativa_votacao_desc"] += f'| {row["iniciativa_evento_obsFase"]}'
+            else:
+                columns_to_keep["iniciativa_votacao_desc"] = row["iniciativa_evento_obsFase"]
 
         if row["iniciativa_votacao_res"]:
             data_initiatives.append(columns_to_store)
