@@ -189,6 +189,7 @@ def _get_author_deputy(initiative: pd.Series) -> str:
 def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
     """
     Parse parlamento API and return the main information of each initiative.
+    
     Will return a raw version, i.e., a wide range of information that needs to be further parsed.
     """
 
@@ -394,7 +395,10 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
                         [
                             "|".join(
                                 [
-                                    x.get("link", "")
+                                    x.get("link", "")BlobContainerClient
+from tqdm import tqdm
+
+from src.parliament.common import MyDict, to_list
                                     for x in to_list(
                                         MyDict(orador)
                                         .get("linkVideo", {})
@@ -568,6 +572,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
 def _split_vote_result(vote: str) -> Dict[str, list]:
     """
     Extract vote result from poll
+    
     Return a dicionary with a list of parties for each poll option
     """
 
