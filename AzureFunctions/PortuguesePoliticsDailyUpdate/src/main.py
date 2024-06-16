@@ -12,6 +12,8 @@ logger.addHandler(handler)
 
 def main(mytimer: func.TimerRequest) -> None:
     utc_timestamp = (
+        # TODO:
+        # utcnow() is deprecated -> since python 3.11 we could use datetime.UTC
         datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
     )
 
