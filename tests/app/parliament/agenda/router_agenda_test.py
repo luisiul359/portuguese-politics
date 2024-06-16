@@ -1,9 +1,8 @@
 from typing import Optional
-from app.parliament.model.agenda import EventoAgenda
 import pytest
-from httpx import ASGITransport, AsyncClient
+from httpx import AsyncClient
 
-from src.app.main import parliament_app, app
+from src.app.main import parliament_app
 
 
 base_url = "http://test"
