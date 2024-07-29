@@ -666,10 +666,10 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
                         columns_to_store[f"iniciativa_votacao_{party}"] = vote
 
         if row["iniciativa_evento_obsFase"]:
-            if columns_to_keep["iniciativa_votacao_desc"]:
-                columns_to_keep["iniciativa_votacao_desc"] += f'| {row["iniciativa_evento_obsFase"]}'
+            if columns_to_store["iniciativa_votacao_desc"]:
+                columns_to_store["iniciativa_votacao_desc"] += f'| {row["iniciativa_evento_obsFase"]}'
             else:
-                columns_to_keep["iniciativa_votacao_desc"] = row["iniciativa_evento_obsFase"]
+                columns_to_store["iniciativa_votacao_desc"] = row["iniciativa_evento_obsFase"]
 
         if row["iniciativa_votacao_res"]:
             data_initiatives.append(columns_to_store)
