@@ -674,6 +674,11 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
         if row["iniciativa_votacao_res"]:
             data_initiatives.append(columns_to_store)
 
+        party = columns_to_store["iniciativa_autor"].lower()
+        columns_to_store["iniciativa_votacao_contra_sua_iniciativa"] = (
+            columns_to_store[f"iniciativa_votacao_{party}"] == "contra"
+        )
+
     data_initiatives = pd.DataFrame(data_initiatives)
 
     # enhance data with processed fields
