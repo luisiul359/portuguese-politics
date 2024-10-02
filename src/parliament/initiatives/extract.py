@@ -195,6 +195,10 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
 
     data_initiatives = []
     for initiative in tqdm(raw_initiatives, "getting_initiatives", file=sys.stdout):
+        # sometimes the `dict.get` works but it returns None,
+        # with MyDict that won't happen
+        initiative = MyDict(initiative)
+
         # save all the initiative information to be stored
         info_to_store = {}
 
@@ -650,10 +654,10 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
     ):
         columns_to_store = row[columns_to_keep].copy()
 
-        if row["iniciativa_votacao_detalhe"]:
+        if row["iniciativa_votacao_res"]:
+            # create a new column for each party with the respective vote
             vote_results = _split_vote_result(row["iniciativa_votacao_detalhe"])
 
-            # create a new column for each party with the respective vote
             for vote, parties in vote_results.items():
                 for party in parties:
                     if "outros" in vote:
@@ -665,25 +669,30 @@ def get_initiatives_votes(initiatives: pd.DataFrame) -> pd.DataFrame:
                     else:
                         columns_to_store[f"iniciativa_votacao_{party}"] = vote
 
-        if row["iniciativa_evento_obsFase"]:
-            if columns_to_store["iniciativa_votacao_desc"]:
-                columns_to_store["iniciativa_votacao_desc"] += f'| {row["iniciativa_evento_obsFase"]}'
-            else:
-                columns_to_store["iniciativa_votacao_desc"] = row["iniciativa_evento_obsFase"]
+            if row["iniciativa_evento_obsFase"]:
+                if columns_to_store["iniciativa_votacao_desc"]:
+                    columns_to_store["iniciativa_votacao_desc"] += f'| {row["iniciativa_evento_obsFase"]}'
+                else:
+                    columns_to_store["iniciativa_votacao_desc"] = row["iniciativa_evento_obsFase"]
 
-        if row["iniciativa_votacao_res"]:
+            if row["iniciativa_votacao_unanime"] == "unanime":
+                columns_to_store["iniciativa_votacao_contra_sua_iniciativa"] = False
+            else:
+                party = columns_to_store["iniciativa_autor"].lower()
+                if f"iniciativa_votacao_{party}" in columns_to_store:
+                    columns_to_store["iniciativa_votacao_contra_sua_iniciativa"] = (
+                        columns_to_store[f"iniciativa_votacao_{party}"] == "contra"
+                    )
+                else:
+                    columns_to_store["iniciativa_votacao_contra_sua_iniciativa"] = False
+
             data_initiatives.append(columns_to_store)
 
-        party = columns_to_store["iniciativa_autor"].lower()
-        columns_to_store["iniciativa_votacao_contra_sua_iniciativa"] = (
-            columns_to_store[f"iniciativa_votacao_{party}"] == "contra"
-        )
-
-    data_initiatives = pd.DataFrame(data_initiatives)
+    df_initiatives = pd.DataFrame(data_initiatives)
 
     # enhance data with processed fields
-    data_initiatives["iniciativa_aprovada"] = (
-        data_initiatives["iniciativa_votacao_res"] == "Aprovado"
+    df_initiatives["iniciativa_aprovada"] = (
+        df_initiatives["iniciativa_votacao_res"] == "Aprovado"
     )
 
-    return data_initiatives
+    return df_initiatives
