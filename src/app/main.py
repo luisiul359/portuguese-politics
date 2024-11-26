@@ -16,6 +16,8 @@ from fastapi import FastAPI
 from src.app.apis import schemas
 from src.elections.extract import extract_legislativas_2019
 from src.parliament.initiatives import votes
+from src.app.parliament.router.deputy import deputy_router
+from src.app.config.app import app_config, Env
 
 # load_dotenv(dotenv_path=".env")
 
@@ -197,26 +199,32 @@ def load_data():
 # Create FastAPI client
 tags_metadata = [
     {
-        "name": "Parliament",
-        "description": "Information from Portuguese Parliament API.",
+        "name": "Parlamento",
+        "description": "Informação relativa à Assembleia da República Portuguesa e trabalhos no Parlamento.",
     },
     {
-        "name": "Elections",
-        "description": "Information from Portuguese previous elections.",
+        "name": "Eleições",
+        "description": "Resultados de eleições portuguesas.",
     },
 ]
 
 
 app = FastAPI(openapi_tags=tags_metadata)
+parliament_app = FastAPI() #tag parlamento
+
+parliament_app.include_router(deputy_router)
+
+app.mount("/parlamento", parliament_app)
 
 
 @app.on_event("startup")
 async def startup_event():
-    # The idea is to load all cached data during the app boostrap.
-    # In some endpoints due the parameters it is not possible to just
-    # filter the cached data and therefore some computation is done,
-    # meaning slower responses.
-    load_data()
+    if (app_config.env == Env.PROD):
+        # The idea is to load all cached data during the app boostrap.
+        # In some endpoints due the parameters it is not possible to just
+        # filter the cached data and therefore some computation is done,
+        # meaning slower responses.
+        load_data()
 
 
 @app.get(
