@@ -45,10 +45,7 @@ def _get_raw_data(path: str) -> Dict:
         )
         assert payload.status_code == 200
 
-        if legislature != "XVI":
-            return payload.json()["OrganizacaoAR"]
-        else:
-            return payload.json()
+        return payload.json()["OrganizacaoAR"]
     except Exception as e:
         raise e
 
