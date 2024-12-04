@@ -33,7 +33,7 @@ class LegislatureMember:
         return {"nome": self.name, "dep_id": self.id}
 
 
-def _get_raw_data(path: str) -> Dict:
+def _get_raw_data(path: str, legislature: str) -> Dict:
     """Load the most recent data provided by Parlamento"""
 
     try:
@@ -44,7 +44,10 @@ def _get_raw_data(path: str) -> Dict:
         )
         assert payload.status_code == 200
 
-        return payload.json()["OrganizacaoAR"]
+        if legislature != "XVI":
+            return payload.json()["OrganizacaoAR"]
+        else:
+            return payload.json()
     except Exception as e:
         raise e
 
@@ -125,8 +128,8 @@ def _get_party_deputy_chair(organization_general_assembly: Dict):
     return party_group_leaders
 
 
-def get_legislatures_fields(path: str) -> Dict:
-    data = _get_raw_data(path=path)
+def get_legislatures_fields(path: str, legislature: str) -> Dict:
+    data = _get_raw_data(path=path, legislature=legislature)
     chair_of_general_assembly = _get_chair_of_general_assembly(data)
     party_deputy_chair = _get_party_deputy_chair(data)
     party_counters = _get_party_deputy_counter(data)
