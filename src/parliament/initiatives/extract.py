@@ -40,9 +40,12 @@ def get_raw_data_from_blob(
         data = blob_container.get_blob_client(f"{legislature_name}.json")
         raw_data = json.loads(data.download_blob().readall())
 
-        return raw_data.get(
-            "ArrayOfPt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", {}
-        ).get("pt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", [])
+        if legislature_name = "XVI":
+            return raw_data
+        else:
+            return raw_data.get(
+                "ArrayOfPt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", {}
+            ).get("pt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", [])
     except Exception as e:
         print(blob_container.container_name)
         raise e
