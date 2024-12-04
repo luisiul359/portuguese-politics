@@ -40,7 +40,7 @@ def get_raw_data_from_blob(
         data = blob_container.get_blob_client(f"{legislature_name}.json")
         raw_data = json.loads(data.download_blob().readall())
 
-        if legislature_name = "XVI":
+        if legislature_name == "XVI":
             return raw_data
         else:
             return raw_data.get(
