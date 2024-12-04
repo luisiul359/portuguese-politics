@@ -20,7 +20,8 @@ ALL_PATHS = [
 
 ONGOING_PATHS = [
     ("XV", PATH_XV),
-    ("XVI", PATH_XVI)
+    # format changed, code needs to be updated
+    #("XVI", PATH_XVI)
 ]
 
 
@@ -33,7 +34,7 @@ class LegislatureMember:
         return {"nome": self.name, "dep_id": self.id}
 
 
-def _get_raw_data(path: str, legislature: str) -> Dict:
+def _get_raw_data(path: str) -> Dict:
     """Load the most recent data provided by Parlamento"""
 
     try:
@@ -128,8 +129,8 @@ def _get_party_deputy_chair(organization_general_assembly: Dict):
     return party_group_leaders
 
 
-def get_legislatures_fields(path: str, legislature: str) -> Dict:
-    data = _get_raw_data(path=path, legislature=legislature)
+def get_legislatures_fields(path: str) -> Dict:
+    data = _get_raw_data(path=path)
     chair_of_general_assembly = _get_chair_of_general_assembly(data)
     party_deputy_chair = _get_party_deputy_chair(data)
     party_counters = _get_party_deputy_counter(data)
