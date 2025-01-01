@@ -12,7 +12,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "3.11.9"   
-requests = "~2.31"
+requests = "~2.32"
 pandas = "~2.2"
 ipykernel = "~6.29"
 tqdm = "~4.66"
