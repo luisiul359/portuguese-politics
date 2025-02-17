@@ -1,6 +1,8 @@
 SHELL=/bin/bash
 
-.PHONY = setup init run test clean format_code
+include .env
+
+.PHONY = setup init run test clean format_code run_local run_daily_updater
 
 # Defines the default target that `make` will try to make, or in the case of a phony target, execute the specified commands
 # This target is executed whenever we just type `make`
@@ -8,14 +10,18 @@ SHELL=/bin/bash
 
 # This will install the package manager Poetry
 setup:
-	curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | ${PYTHON} -
+	curl -sSL https://install.python-poetry.org | python3 -
 	@echo "Done."
 
 init:
 	poetry install
 
-runlocal:
-	poetry run uvicorn src.app.main:app --reload --env-file .env
+run_daily_updater:
+	source .env
+	python3 src/daily_updater/main.py
+
+run_local:
+	env $(grep -v '^#' .env | xargs) poetry run uvicorn src.app.main:app --reload --env-file .env
 
 run:
 	docker build -t portuguese-politics .

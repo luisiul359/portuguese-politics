@@ -2,10 +2,9 @@ import json
 import sys
 from collections import defaultdict
 from copy import deepcopy
-from typing import Any, Dict, List, Union
+from typing import Dict, List
 
 import pandas as pd
-import requests
 from azure.storage.blob import ContainerClient as BlobContainerClient
 from tqdm import tqdm
 
@@ -38,43 +37,13 @@ def get_raw_data_from_blob(
 
     try:
         data = blob_container.get_blob_client(f"{legislature_name}.json")
-        raw_data = json.loads(data.download_blob().readall())
-
-        if legislature_name == "XVI":
-            return raw_data
-        else:
-            return raw_data.get(
-                "ArrayOfPt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", {}
-            ).get("pt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", [])
+        return json.loads(data.download_blob().readall())
     except Exception as e:
         print(blob_container.container_name)
         raise e
 
 
-def get_raw_data(path: str) -> List[Dict]:
-    """Load the most recent data provided by Parlamento"""
-
-    try:
-        payload = requests.get(
-            path,
-            # fake, but wihtout it the request is rejected
-            headers={"User-Agent": "Mozilla/5.0"},
-        )
-        assert payload.status_code == 200
-
-        return (
-            payload.json()
-            .get(
-                "ArrayOfPt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut",
-                {},
-            )
-            .get("pt_gov_ar_objectos_iniciativas_DetalhePesquisaIniciativasOut", [])
-        )
-    except Exception as e:
-        print(path)
-        raise e
-
-
+# TODO: Not updated
 def get_initiatives_followups(raw_initiatives: List) -> pd.DataFrame:
     """Create a many to many relationship between initiatives (the main initiative and the folow-up)"""
 
@@ -115,6 +84,7 @@ def get_initiatives_followups(raw_initiatives: List) -> pd.DataFrame:
     return pd.DataFrame(data_initiatives_followups)
 
 
+# TODO: Not updated
 def get_initiatives_petitions(raw_initiatives: List) -> pd.DataFrame:
     """Create a many to many relationship between initiatives and petitions"""
 
@@ -194,6 +164,8 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
     Parse parlamento API and return the main information of each initiative.
 
     Will return a raw version, i.e., a wide range of information that needs to be further parsed.
+
+    Works until legislature XV.
     """
 
     data_initiatives = []
@@ -206,14 +178,14 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
         info_to_store = {}
 
         # initiative
-        info_to_store["iniciativa_id"] = initiative.get("iniId", "")
-        info_to_store["iniciativa_nr"] = initiative.get("iniNr", "")
-        info_to_store["iniciativa_tipo"] = initiative.get("iniDescTipo", "")
-        info_to_store["iniciativa_titulo"] = initiative.get("iniTitulo", "")
-        info_to_store["iniciativa_url"] = initiative.get("iniLinkTexto", "")
-        info_to_store["iniciativa_obs"] = initiative.get("iniObs", "")
+        info_to_store["iniciativa_id"] = initiative.get("IniId", "")
+        info_to_store["iniciativa_nr"] = initiative.get("IniNr", "")
+        info_to_store["iniciativa_tipo"] = initiative.get("IniDescTipo", "")
+        info_to_store["iniciativa_titulo"] = initiative.get("IniTitulo", "")
+        info_to_store["iniciativa_url"] = initiative.get("IniLinkTexto", "")
+        info_to_store["iniciativa_obs"] = initiative.get("IniObs", "")
         info_to_store["iniciativa_texto_subst"] = initiative.get(
-            "iniTextoSubstCampo", ""
+            "IniTextoSubstCampo", ""
         )
 
         # iniAutorGruposParlamentares
@@ -221,16 +193,14 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
             [
                 MyDict(autor).get("GP", "")
                 for autor in to_list(
-                    initiative.get("iniAutorGruposParlamentares", {}).get(
-                        "pt_gov_ar_objectos_AutoresGruposParlamentaresOut", []
-                    )
+                    initiative.get("IniAutorGruposParlamentares", [])
                 )
             ]
         )
 
         # iniAutorOutros
         info_to_store["iniciativa_autor_outros_nome"] = initiative.get(
-            "iniAutorOutros", {}
+            "IniAutorOutros", {}
         ).get("nome", "")
         info_to_store["iniciativa_autor_outros_autor_comissao"] = initiative.get(
             "iniAutorOutros", {}
@@ -238,9 +208,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
 
         # iniAutorDeputados
         autor_deputados = to_list(
-            initiative.get("iniAutorDeputados", {}).get(
-                "pt_gov_ar_objectos_iniciativas_AutoresDeputadosOut", []
-            )
+            initiative.get("IniAutorDeputados", [])
         )
         info_to_store["iniciativa_autor_deputados_nomes"] = "|".join(
             [MyDict(x).get("nome", "") for x in autor_deputados if x]
@@ -251,9 +219,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
 
         # iniAnexos
         anexos = to_list(
-            initiative.get("iniAnexos", {}).get(
-                "pt_gov_ar_objectos_iniciativas_AnexosOut", []
-            )
+            initiative.get("IniAnexos", [])
         )
         info_to_store["iniciativa_anexos_nomes"] = "|".join(
             [MyDict(x).get("anexoNome", "") for x in anexos if x]
@@ -264,9 +230,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
 
         # iniciativasOrigem
         origem = to_list(
-            MyDict(initiative.get("iniciativasOrigem", {})).get(
-                "pt_gov_ar_objectos_iniciativas_DadosGeraisOut", []
-            )
+            initiative.get("IniciativasOrigem", [])
         )
         info_to_store["iniciativa_origem_id"] = "|".join(
             [MyDict(x).get("id", "") for x in origem if x]
@@ -286,22 +250,18 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
         # each initiative can go through different stages / events until it is closed.
         # We will collect different information based on the stage / event
         events = to_list(
-            initiative.get("iniEventos", {}).get(
-                "pt_gov_ar_objectos_iniciativas_EventosOut", []
-            )
+            initiative.get("IniEventos", [])
         )
         for event in events:
             info_to_store_details = deepcopy(info_to_store)
 
-            info_to_store_details["iniciativa_evento_fase"] = event.get("fase", "")
-            info_to_store_details["iniciativa_evento_data"] = event.get("dataFase", "")
-            info_to_store_details["iniciativa_evento_id"] = event.get("evtId", "")
-            info_to_store_details["iniciativa_evento_obsFase"] = event.get("obsFase", "")
+            info_to_store_details["iniciativa_evento_fase"] = event.get("Fase", "")
+            info_to_store_details["iniciativa_evento_data"] = event.get("DataFase", "")
+            info_to_store_details["iniciativa_evento_id"] = event.get("EvtId", "")
+            info_to_store_details["iniciativa_evento_obsFase"] = event.get("ObsFase", "")
 
             publicacao_detalhe = to_list(
-                event.get("publicacaoFase", {}).get(
-                    "pt_gov_ar_objectos_PublicacoesOut", {}
-                )
+                event.get("PublicacaoFase", [])
             )
             info_to_store_details["iniciativa_publicacao_Tipo"] = [
                 MyDict(x).get("pubTipo", "") for x in publicacao_detalhe
@@ -314,15 +274,13 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
             ]
             info_to_store_details["iniciativa_publicacao_Pags"] = "|".join(
                 [
-                    "|".join(to_list(MyDict(x).get("pag", {}).get("string", "")))
+                    "|".join(to_list(MyDict(x).get("pag", [])))
                     for x in publicacao_detalhe
                 ]
             )
 
             iniciativas_conjuntas = to_list(
-                event.get("iniciativasConjuntas", {}).get(
-                    "pt_gov_ar_objectos_iniciativas_DiscussaoConjuntaOut", []
-                )
+                event.get("IniciativasConjuntas", [])
             )
             info_to_store_details["iniciativa_iniciativas_conjuntas_tipo"] = "|".join(
                 [MyDict(x).get("descTipo", "") for x in iniciativas_conjuntas if x]
@@ -332,9 +290,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
             )
 
             intervencoes = to_list(
-                event.get("intervencoesdebates", {}).get(
-                    "pt_gov_ar_objectos_IntervencoesOut", []
-                )
+                event.get("Intervencoesdebates", [])
             )
             info_to_store_details["iniciativa_oradores_deputados_nomes"] = "|".join(
                 [
@@ -342,9 +298,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
                         [
                             MyDict(orador).get("deputados", {}).get("nome", "")
                             for orador in to_list(
-                                intervencao.get("oradores", {}).get(
-                                    "pt_gov_ar_objectos_peticoes_OradoresOut", []
-                                )
+                                intervencao.get("oradores", [])
                             )
                         ]
                     )
@@ -357,9 +311,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
                         [
                             MyDict(orador).get("deputados", {}).get("GP", "")
                             for orador in to_list(
-                                intervencao.get("oradores", {}).get(
-                                    "pt_gov_ar_objectos_peticoes_OradoresOut", []
-                                )
+                                intervencao.get("oradores", [])
                             )
                         ]
                     )
@@ -372,9 +324,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
                         [
                             MyDict(orador).get("membrosGoverno", {}).get("nome", "")
                             for orador in to_list(
-                                intervencao.get("oradores", {}).get(
-                                    "pt_gov_ar_objectos_peticoes_OradoresOut", []
-                                )
+                                intervencao.get("oradores", [])
                             )
                         ]
                     )
@@ -387,9 +337,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
                         [
                             MyDict(orador).get("membrosGoverno", {}).get("cargo", "")
                             for orador in to_list(
-                                intervencao.get("oradores", {}).get(
-                                    "pt_gov_ar_objectos_peticoes_OradoresOut", []
-                                )
+                                intervencao.get("oradores", [])
                             )
                         ]
                     )
@@ -406,18 +354,13 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
                                     x.get("link", "")
                                     for x in to_list(
                                         MyDict(orador)
-                                        .get("linkVideo", {})
-                                        .get(
-                                            "pt_gov_ar_objectos_peticoes_LinksVideos",
-                                            {},
-                                        )
+                                        .get("linkVideo", [])
                                     )
                                 ]
                             )
                             for orador in to_list(
                                 MyDict(intervencao)
-                                .get("oradores", {})
-                                .get("pt_gov_ar_objectos_peticoes_OradoresOut", [])
+                                .get("oradores", [])
                             )
                         ]
                     )
@@ -425,10 +368,10 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
                 ]
             )
 
-            votacao = event.get("votacao", {}).get("pt_gov_ar_objectos_VotacaoOut", {})
-            if isinstance(votacao, list):
-                # in some situations the same initiative in a certain event can have several votes
-                # for now we will consider only the first one
+            votacao = to_list(event.get("Votacao", []))
+            # in some situations the same initiative in a certain event can have several votes
+            # for now we will consider only the first one
+            if len(votacao) > 0:
                 votacao = votacao[0]
             votacao = MyDict(votacao)
             info_to_store_details["iniciativa_votacao_res"] = votacao.get(
@@ -446,14 +389,12 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
             info_to_store_details["iniciativa_votacao_detalhe"] = votacao.get(
                 "detalhe", ""
             )
-            info_to_store_details["iniciativa_votacao_ausencias"] = votacao.get(
-                "ausencias", {}
-            ).get("string", "")
+            info_to_store_details["iniciativa_votacao_ausencias"] = to_list(
+                votacao.get("ausencias", [])
+            )
 
             anexos = to_list(
-                event.get("anexosFase", {}).get(
-                    "pt_gov_ar_objectos_iniciativas_AnexosOut", []
-                )
+                event.get("AnexosFase", [])
             )
             info_to_store_details["iniciativa_anexo_nome"] = "|".join(
                 [MyDict(x).get("anexoNome", "") for x in anexos if x]
@@ -462,24 +403,23 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
                 [MyDict(x).get("anexoFich", "") for x in anexos if x]
             )
 
-            comissao = MyDict(event.get("comissao", {})).get(
-                "pt_gov_ar_objectos_iniciativas_ComissoesIniOut", {}
-            )
-            info_to_store_details["iniciativa_comissao_nome"] = comissao.get("nome", "")
+            """
+            comissao = to_list(event.get("Comissao", []))[0]
+            info_to_store_details["iniciativa_comissao_nome"] = comissao.get("Nome", "")
             info_to_store_details["iniciativa_comissao_competente"] = comissao.get(
-                "competente", ""
+                "Competente", ""
             )
             info_to_store_details["iniciativa_comissao_observacao"] = comissao.get(
-                "observacao", ""
+                "Observacao", ""
             )
             info_to_store_details["iniciativa_comissao_data_relatorio"] = comissao.get(
-                "dataRelatorio", ""
+                "DataRelatorio", ""
             )
             info_to_store_details["iniciativa_comissao_pedidos_parecer"] = "|".join(
                 [
                     _
                     for _ in to_list(
-                        comissao.get("pedidosParecer", {}).get("string", [])
+                        comissao.get("PedidosParecer", [])
                     )
                     if isinstance(_, str)
                 ]
@@ -488,29 +428,27 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
                 [
                     _
                     for _ in to_list(
-                        comissao.get("pareceresRecebidos", {}).get("string", [])
+                        comissao.get("PareceresRecebidos", [])
                     )
                     if isinstance(_, str)
                 ]
             )
 
             documentos = to_list(
-                comissao.get("documentos", {}).get("pt_gov_ar_objectos_DocsOut", [])
+                comissao.get("Documentos", [])
             )
             info_to_store_details["iniciativa_comissao_documentos_Titulos"] = "|".join(
-                [MyDict(x).get("tituloDocumento", "") for x in documentos if x]
+                [MyDict(x).get("TituloDocumento", "") for x in documentos if x]
             )
             info_to_store_details["iniciativa_comissao_documentos_Tipos"] = "|".join(
-                [MyDict(x).get("tipoDocumento", "") for x in documentos if x]
+                [MyDict(x).get("TipoDocumento", "") for x in documentos if x]
             )
             info_to_store_details["iniciativa_comissao_documentos_URLs"] = "|".join(
                 [MyDict(x).get("URL", "") for x in documentos if x]
             )
 
             publicacaoDetalhe = to_list(
-                comissao.get("publicacao", {}).get(
-                    "pt_gov_ar_objectos_PublicacoesOut", {}
-                )
+                comissao.get("PublicacaoFase", [])
             )
             info_to_store_details["iniciativa_comissao_publicacao_Tipo"] = [
                 MyDict(x).get("pubTipo", "") for x in publicacaoDetalhe
@@ -523,17 +461,15 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
             ]
             info_to_store_details["iniciativa_comissao_publicacao_Pags"] = "|".join(
                 [
-                    "|".join(to_list(MyDict(x).get("pag", {}).get("string", "")))
+                    "|".join(to_list(MyDict(x).get("pag", [])))
                     for x in publicacaoDetalhe
                 ]
             )
 
-            votacao = comissao.get("votacao", {}).get(
-                "pt_gov_ar_objectos_VotacaoOut", {}
-            )
+            votacao = comissao.get("Votacao", [])
             # in some situations that I need to understand we have several polls
             # for now will keep the first one
-            if isinstance(votacao, List):
+            if len(votacao) > 0:
                 votacao = votacao[0]
             info_to_store_details["iniciativa_comissao_votacao_res"] = votacao.get(
                 "resultado", ""
@@ -547,6 +483,7 @@ def get_initiatives(raw_initiatives: List) -> pd.DataFrame:
             info_to_store_details["iniciativa_comissao_votacao_unanime"] = votacao.get(
                 "unanime", ""
             )
+            """
 
             # TODO: in event: teor, sumario, publicacao
             # TODO: in comissao:  audicoes, audiencias, distribuicaoSubcomissao, motivoNaoParecer, pareceresRecebidos, pedidosParecer, relatores

@@ -2,7 +2,7 @@ from typing import Any, List, Union
 
 
 def to_list(x: Union[Any, List]) -> List:
-    return x if isinstance(x, list) else [x]
+    return [v for v in (x if isinstance(x, list) else [x]) if v]
 
 
 def get_most_recent_status(x: Union[Any, List], date_field):

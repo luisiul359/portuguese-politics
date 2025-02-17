@@ -4,10 +4,7 @@ version = "0.1.2"
 description = "Extract information from different sources regarding Portuguese Politics."
 authors = ["Luis Silva <luisiul359@gmail.com>"]
 packages = [ 
-    { include = "elections", from = "src" }, 
-    { include = "parliament", from = "src" }, 
-    { include = "app", from = "src" },
-    { include = "daily_updater", from = "src" } 
+    { include = "src" }, 
 ]
 
 [tool.poetry.dependencies]
