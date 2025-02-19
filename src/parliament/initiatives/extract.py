@@ -537,7 +537,8 @@ def _split_vote_result(vote: str) -> Dict[str, list]:
     )
     vote = vote.replace("cristinarodrigues(ninsc)", "cr").replace(
         "joacinekatarmoreira(ninsc)", "jkm").replace(
-        "antóniomalódeabreu(ninsc)", "ama"
+        "antóniomalódeabreu(ninsc)", "ama").replace(
+        "miguelarruda(ninsc)","mar"
     )
     vote = vote.split(",")
 
@@ -549,7 +550,7 @@ def _split_vote_result(vote: str) -> Dict[str, list]:
         if party in "afavor,contra,ausência,abstenção":
             current_option = party
         else:
-            if party in "ps,psd,be,pcp,cds-pp,pan,pev,ch,il,l,cr,jkm,ama".split(","):
+            if party in "ps,psd,be,pcp,cds-pp,pan,pev,ch,il,l,cr,jkm,ama,mar".split(","):
                 result[current_option].append(party)
             # sometimes deputies vote different from their own party
             else:

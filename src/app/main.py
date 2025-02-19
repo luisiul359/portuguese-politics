@@ -278,7 +278,8 @@ def get_party_approvals(
             .replace(" ", "-")
             .replace("cristina-rodrigues", "cr")
             .replace("joacine-katar-moreira", "jkm")
-            .replace("antónio-maló-de-abreu", "ama"),
+            .replace("antónio-maló-de-abreu", "ama")
+            .replace("miguel-arruda", "mar"),
             "nome": autor,
             "total_iniciativas": value["total_iniciativas"],
             "total_iniciativas_aprovadas": value["total_iniciativas_aprovadas"],
@@ -304,7 +305,8 @@ def get_party_approvals(
                 replace(" ", "-").\
                 replace("cristina-rodrigues", "cr").\
                 replace("joacine-katar-moreira", "jkm").\
-                replace("antónio-maló-de-abreu", "ama")
+                replace("antónio-maló-de-abreu", "ama").\
+                replace("miguel-arruda", "mar")
             example["nome"] = party
             example["total_iniciativas"] = 0
             example["total_iniciativas_aprovadas"] = 0

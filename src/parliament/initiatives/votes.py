@@ -137,6 +137,7 @@ def collect_parties_strange_votes(data_initiatives_votes: pd.DataFrame) -> pd.Da
             .replace("cr", "CRISTINA RODRIGUES")
             .replace("jkm", "JOACINE KATAR MOREIRA")
             .replace("ama", "ANTÓNIO MALÓ DE ABREU")
+            .replace("mar", "MIGUEL ARRUDA")
             .upper()
         )
 

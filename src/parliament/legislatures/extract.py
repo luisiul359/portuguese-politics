@@ -19,7 +19,7 @@ ALL_PATHS = [
 ]
 
 ONGOING_PATHS = [
-    ("XV", PATH_XV),
+    #("XV", PATH_XV),
     # format changed, code needs to be updated
     #("XVI", PATH_XVI)
 ]
