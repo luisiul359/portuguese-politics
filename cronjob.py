@@ -24,11 +24,14 @@ PATH_XIV = "https://app.parlamento.pt/webutils/docs/doc.txt?path=6148523063446f7
 PATH_XV = "https://app.parlamento.pt/webutils/docs/doc.txt?path=6148523063446f764c324679626d56304c3239775a57356b595852684c3052685a47397a51574a6c636e52766379394a626d6c6a6157463061585a6863793959566955794d45786c5a326c7a6247463064584a684c306c7561574e7059585270646d467a57465a66616e4e76626935306548513d&fich=IniciativasXV_json.txt&Inline=true"
 # XVI Legislatura
 PATH_XVI = "https://app.parlamento.pt/webutils/docs/doc.txt?path=9%2bS1R0rmlrJvA0k2UXLx9yXhooCL9aOS1uwNJphMqHhYpUJSfAZL3TuTXUSEdgr0rEqcbxbKyZ8kkqjsINFMLdFXsUnM%2ffrx2L%2bqlZZftbIFjCovRHvFD1l%2bEhYNkY5XJyJr8JB%2brn0T%2fU3ryaefr2nendsQE9PEZevIlvAUVSXpDfYXejIDMEK6PLJ1fAgqrpwN1mQ33joes2PSsmGkTJ16S7ccT94syYr4ehW2V3Kj3yAMuDHW68rp8MCMl1QfCCBu52Fo%2bhdG6ax7R5OHARHV0l8PXrC2deUDz1R6kaF7rIpQiSDX%2fRhM8E1OrXS%2fziFr1wbBtE1zThR4P%2basXA%3d%3d&fich=IniciativasXVI_json.txt&Inline=true"
+# XVII Legislatura
+PATH_XVII = "https://app.parlamento.pt/webutils/docs/doc.txt?path=ahGMUqliwcyLrd5EdXPwxj2%2bjoB3isJLFYQCjCMxpNjXy05f%2fhLBnuHP1e3JiH2m7o%2fiRcfkONDaz1D3DAKlNXdF1HFLtWVx3LbVWxmGX4ZcKyfWsfUXYA3RAoy%2b8OMRTlVsd3MNCqKmowFvAPK1uf%2bU2ke3pbdsY5yqNzSghVS4looThTR8XlJqYKLIH9qb8i2At3SJ2lcWswycKHKzKetX9HKK1NWTAaY0Bm%2bcI9i0RD6j1QyyvZRgb123z986DvFVTlbYl9UosKD2Z9%2brKsHEZnA9qnEivcwoKgCoUth0odWjsmILSJtRbFnaCKhpX2SpLsYeECDLlmKCQ%2fbf58iM3F7NPsleVMuADlJP6ABDc2%2fcEbezELCbqkS1w%2fwCsWXbc5Uw3Z43KK%2bh5qcC2g%3d%3d&fich=IniciativasXVII_json.txt&Inline=true"
 
 ALL_PATHS = [
     #  ("XIV", PATH_XIV),  # no need since the file is not being updated
-    ("XV", PATH_XV),
+    #  ("XV", PATH_XV),    # no need since the file is not being updated
     ("XVI", PATH_XVI),
+    ("XVII", PATH_XVII),
 ]
 
 
