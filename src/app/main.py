@@ -182,6 +182,11 @@ def load_data():
         for legislature in ["XIV", "XV", "XVI"]  #ALL_LEGISLATURES # To be fixed
     }
 
+    # To be fixed
+    legislature_fields["XVII"] = {
+        "partidos": [{'name': 'psd'}, {'name': 'jpp'}, {'name': 'ch'}, {'name': 'ps'}, {'name': 'pan'}, {'name': 'cds-pp'}, {'name': 'be'}, {'name': 'l'}, {'name': 'il'}, {'name': 'pcp'}]
+    }
+
     # legislative data
     (
         parties_legislatives_2019,
@@ -458,6 +463,9 @@ def get_legislatures(
     """
     Get information regarding a particular legislature
     """
+    if legislature == schemas.Legislature.XVII:
+        return []
+
     return legislature_fields[legislature.value]
 
 
