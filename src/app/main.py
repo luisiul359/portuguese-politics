@@ -184,7 +184,7 @@ def load_data():
 
     # To be fixed
     legislature_fields["XVII"] = {
-        "partidos": [{'name': 'psd'}, {'name': 'jpp'}, {'name': 'ch'}, {'name': 'ps'}, {'name': 'pan'}, {'name': 'cds-pp'}, {'name': 'be'}, {'name': 'l'}, {'name': 'il'}, {'name': 'pcp'}]
+        "partidos": [{"nome": 'psd'}, {"nome": 'jpp'}, {"nome": 'ch'}, {"nome": 'ps'}, {"nome": 'pan'}, {"nome": 'cds-pp'}, {"nome": 'be'}, {"nome": 'l'}, {"nome": 'il'}, {"nome": 'pcp'}]
     }
 
     # legislative data
