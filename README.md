@@ -45,10 +45,6 @@ make runlocal
 4. API runs using Gunicorn and FastAPI
     * Source code executed is `src.app.main`
 
-## Python modules
-
-The Python version used must be one of https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-python, since this is the environment used by Heroku
-
 ## Add a new endpoint
 
 1. If a new data source needs to be downloaded from the Portuguese Parliament it is necessary to update the cronjob task
