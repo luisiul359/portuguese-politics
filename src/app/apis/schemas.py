@@ -37,6 +37,7 @@ class Legislature(str, Enum):
     XIV = "XIV"
     XV = "XV"
     XVI = "XVI"
+    XVII = "XVII"
 
 
 class Initiative(BaseModel):
