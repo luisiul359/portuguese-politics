@@ -179,7 +179,7 @@ def load_data():
         legislature: load_legislatures_fields(
             legislature=legislature, container_client=blob_storage_container_client
         )
-        for legislature in ALL_LEGISLATURES
+        for legislature in ["XIV", "XV", "XVI"]  #ALL_LEGISLATURES # To be fixed
     }
 
     # legislative data
